@@ -1,0 +1,659 @@
+
+<h2 class="sr-only">Inventory, Sales & Logistics MySQL Database Analysis — Flow, Normalization, Schema, and ERD</h2>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.db-wrap { padding: 1rem 0 2rem; }
+.section-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0.6rem 1rem; margin: 2rem 0 1rem;
+  border-left: 3px solid var(--color-border-info);
+  background: var(--color-background-secondary);
+  border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+}
+.section-header .badge {
+  font-size: 11px; font-weight: 500; padding: 2px 8px;
+  border-radius: 99px; background: var(--color-background-info);
+  color: var(--color-text-info); white-space: nowrap;
+}
+.section-header h3 { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+
+/* Tab nav */
+.tab-nav { display: flex; gap: 4px; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 0; }
+.tab-btn {
+  padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer;
+  border: none; background: none; color: var(--color-text-secondary);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color .15s, border-color .15s;
+}
+.tab-btn.active { color: var(--color-text-info); border-bottom-color: var(--color-border-info); }
+.tab-btn:hover:not(.active) { color: var(--color-text-primary); }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* Cards */
+.card {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 12px;
+}
+.norm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 12px; }
+.norm-card {
+  border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg);
+  padding: 12px; background: var(--color-background-secondary);
+}
+.norm-card .nf-label {
+  font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 99px; display: inline-block; margin-bottom: 8px;
+}
+.nf1 { background: var(--color-background-success); color: var(--color-text-success); }
+.nf2 { background: var(--color-background-warning); color: var(--color-text-warning); }
+.nf3 { background: var(--color-background-info); color: var(--color-text-info); }
+.bcnf { background: var(--color-background-danger); color: var(--color-text-danger); }
+.norm-card h4 { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+.norm-card p { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+.norm-card ul { padding-left: 14px; font-size: 12px; color: var(--color-text-secondary); line-height: 1.7; }
+
+/* Schema tables */
+.schema-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.schema-table { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+.schema-table .tbl-head {
+  padding: 8px 12px; font-size: 13px; font-weight: 500;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  display: flex; align-items: center; gap: 8px;
+}
+.tbl-head .engine { font-size: 11px; color: var(--color-text-secondary); margin-left: auto; }
+.schema-table table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.schema-table td { padding: 5px 12px; color: var(--color-text-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); }
+.schema-table tr:last-child td { border-bottom: none; }
+.schema-table td:first-child { font-family: var(--font-mono); color: var(--color-text-primary); width: 38%; }
+.schema-table td:nth-child(2) { font-family: var(--font-mono); color: var(--color-text-info); width: 30%; }
+.pk-icon { font-size: 10px; color: var(--color-text-warning); }
+.fk-icon { font-size: 10px; color: var(--color-text-info); }
+.constraint { font-size: 10px; padding: 1px 5px; border-radius: 4px; background: var(--color-background-secondary); }
+
+/* ERD container */
+#erd-mount { overflow-x: auto; }
+#erd-mount svg { display: block; margin: 0 auto; }
+
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--color-text-secondary); margin-top: 10px; align-items: center; }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+</style>
+
+<div class="db-wrap">
+
+<!-- TAB NAV -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('flow')">Database Flow</button>
+  <button class="tab-btn" onclick="showTab('norm')">Normalization</button>
+  <button class="tab-btn" onclick="showTab('schema')">Schema</button>
+  <button class="tab-btn" onclick="showTab('erd')">ERD</button>
+</div>
+
+<!-- ═══════════════ TAB 1: FLOW ═══════════════ -->
+<div class="tab-pane active" id="tab-flow">
+  <div class="section-header"><div class="badge">Flow</div><h3>End-to-end data flow across Inventory, Sales &amp; Logistics</h3></div>
+  <svg width="100%" viewBox="0 0 680 740" role="img">
+    <title>Database flow diagram</title>
+    <desc>Data flow from customers placing orders through sales, inventory management, fulfillment, and logistics tracking</desc>
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+
+    <!-- LAYER LABELS -->
+    <text class="ts" x="18" y="74" fill="#888" text-anchor="start">Client</text>
+    <text class="ts" x="18" y="174" fill="#888" text-anchor="start">Sales</text>
+    <text class="ts" x="18" y="294" fill="#888" text-anchor="start">Inventory</text>
+    <text class="ts" x="18" y="434" fill="#888" text-anchor="start">Logistics</text>
+    <text class="ts" x="18" y="574" fill="#888" text-anchor="start">Reporting</text>
+    <line x1="70" y1="40" x2="70" y2="710" stroke="var(--color-border-tertiary)" stroke-width="0.5" stroke-dasharray="4 4"/>
+
+    <!-- ROW 1: Customer -->
+    <g class="node c-blue" onclick="sendPrompt('Tell me about the customers table structure')">
+      <rect x="90" y="46" width="130" height="46" rx="8" stroke-width="0.5"/>
+      <text class="th" x="155" y="65" text-anchor="middle" dominant-baseline="central">Customers</text>
+      <text class="ts" x="155" y="83" text-anchor="middle" dominant-baseline="central">customer_id, email</text>
+    </g>
+    <g class="node c-blue" onclick="sendPrompt('Tell me about the products table structure')">
+      <rect x="270" y="46" width="130" height="46" rx="8" stroke-width="0.5"/>
+      <text class="th" x="335" y="65" text-anchor="middle" dominant-baseline="central">Products</text>
+      <text class="ts" x="335" y="83" text-anchor="middle" dominant-baseline="central">product_id, SKU</text>
+    </g>
+    <g class="node c-blue" onclick="sendPrompt('Tell me about the suppliers table structure')">
+      <rect x="450" y="46" width="130" height="46" rx="8" stroke-width="0.5"/>
+      <text class="th" x="515" y="65" text-anchor="middle" dominant-baseline="central">Suppliers</text>
+      <text class="ts" x="515" y="83" text-anchor="middle" dominant-baseline="central">supplier_id, contact</text>
+    </g>
+
+    <!-- ARROWS row1 → row2 -->
+    <line x1="155" y1="92" x2="200" y2="140" stroke="var(--color-border-secondary)" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="335" y1="92" x2="310" y2="140" stroke="var(--color-border-secondary)" stroke-width="1" marker-end="url(#arr)"/>
+
+    <!-- ROW 2: Sales Orders -->
+    <g class="node c-teal" onclick="sendPrompt('Tell me about the sales_orders table structure')">
+      <rect x="160" y="140" width="140" height="46" rx="8" stroke-width="0.5"/>
+      <text class="th" x="230" y="159" text-anchor="middle" dominant-baseline="central">Sales Orders</text>
+      <text class="ts" x="230" y="177" text-anchor="middle" dominant-baseline="central">order_id, status, total</text>
+    </g>
+    <g class="node c-teal" onclick="sendPrompt('Tell me about the order_items table structure')">
+      <rect x="360" y="140" width="140" height="46" rx="8" stroke-width="0.5"/>
+      <text class="th" x="430" y="159" text-anchor="middle" dominant-baseline="central">Order Items</text>
+      <text class="ts" x="430" y="177" text-anchor="middle" dominant-baseline="central">qty, unit_price, discount</text>
+    </g>
+
+    <!-- sales → inventory -->
+    <line x1="230" y1="186" x2="230" y2="250" stroke="var(--color-border-secondary)" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="430" y1="186" x2="370" y2="250" stroke="var(--color-border-secondary)" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="335" y1="92" x2="370" y2="140" stroke="var(--color-border-secondary)" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="515" y1="92" x2="510" y2="250" stroke="var(--color-border-secondary)" stroke-width="1" marker-end="url(#arr)"/>
+
+    <!-- ROW 3: Inventory -->
+    <g class="node c-amber" onclick="sendPrompt('Tell me about the inventory table structure')">
+      <rect x="90" y="250" width="140" height="46" rx="8" stroke-width="0.5"/>
+      <text class="th" x="160" y="269" text-anchor="middle" dominant-baseline="central">Inventory</text>
+      <text class="ts" x="160" y="287" text-anchor="middle" dominant-baseline="central">qty_on_hand, location</text>
+    </g>
+    <g class="node c-amber" onclick="sendPrompt('Tell me about the warehouses table structure')">
+      <rect x="270" y="250" width="140" height="46" rx="8" stroke-width="0.5"/>
+      <text class="th" x="340" y="269" text-anchor="middle" dominant-baseline="central">Warehouses</text>
+      <text class="ts" x="340" y="287" text-anchor="middle" dominant-baseline="central">location, capacity</text>
+    </g>
+    <g class="node c-amber" onclick="sendPrompt('Tell me about the purchase_orders table structure')">
+      <rect x="450" y="250" width="140" height="46" rx="8" stroke-width="0.5"/>
+      <text class="th" x="520" y="269" text-anchor="middle" dominant-baseline="central">Purchase Orders</text>
+      <text class="ts" x="520" y="287" text-anchor="middle" dominant-baseline="central">restock from supplier</text>
+    </g>
+
+    <!-- inventory → logistics -->
+    <line x1="160" y1="296" x2="200" y2="390" stroke="var(--color-border-secondary)" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="340" y1="296" x2="340" y2="390" stroke="var(--color-border-secondary)" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="520" y1="296" x2="480" y2="390" stroke="var(--color-border-secondary)" stroke-width="1" marker-end="url(#arr)"/>
+
+    <!-- ROW 4: Logistics -->
+    <g class="node c-coral" onclick="sendPrompt('Tell me about the shipments table structure')">
+      <rect x="90" y="390" width="140" height="46" rx="8" stroke-width="0.5"/>
+      <text class="th" x="160" y="409" text-anchor="middle" dominant-baseline="central">Shipments</text>
+      <text class="ts" x="160" y="427" text-anchor="middle" dominant-baseline="central">tracking_no, carrier</text>
+    </g>
+    <g class="node c-coral" onclick="sendPrompt('Tell me about the shipment_items table structure')">
+      <rect x="270" y="390" width="140" height="46" rx="8" stroke-width="0.5"/>
+      <text class="th" x="340" y="409" text-anchor="middle" dominant-baseline="central">Shipment Items</text>
+      <text class="ts" x="340" y="427" text-anchor="middle" dominant-baseline="central">item_id, qty_shipped</text>
+    </g>
+    <g class="node c-coral" onclick="sendPrompt('Tell me about the tracking_events table structure')">
+      <rect x="450" y="390" width="140" height="46" rx="8" stroke-width="0.5"/>
+      <text class="th" x="520" y="409" text-anchor="middle" dominant-baseline="central">Tracking Events</text>
+      <text class="ts" x="520" y="427" text-anchor="middle" dominant-baseline="central">status, timestamp, location</text>
+    </g>
+
+    <!-- logistics → reporting -->
+    <line x1="160" y1="436" x2="220" y2="530" stroke="var(--color-border-secondary)" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="340" y1="436" x2="340" y2="530" stroke="var(--color-border-secondary)" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="520" y1="436" x2="460" y2="530" stroke="var(--color-border-secondary)" stroke-width="1" marker-end="url(#arr)"/>
+
+    <!-- ROW 5: Reporting -->
+    <g class="node c-purple" onclick="sendPrompt('Tell me about sales analytics views and reports')">
+      <rect x="90" y="530" width="140" height="46" rx="8" stroke-width="0.5"/>
+      <text class="th" x="160" y="549" text-anchor="middle" dominant-baseline="central">Sales Analytics</text>
+      <text class="ts" x="160" y="567" text-anchor="middle" dominant-baseline="central">revenue, top products</text>
+    </g>
+    <g class="node c-purple" onclick="sendPrompt('Tell me about inventory analytics views and reports')">
+      <rect x="270" y="530" width="140" height="46" rx="8" stroke-width="0.5"/>
+      <text class="th" x="340" y="549" text-anchor="middle" dominant-baseline="central">Inventory Reports</text>
+      <text class="ts" x="340" y="567" text-anchor="middle" dominant-baseline="central">stock level, low-stock</text>
+    </g>
+    <g class="node c-purple" onclick="sendPrompt('Tell me about logistics analytics views and reports')">
+      <rect x="450" y="530" width="140" height="46" rx="8" stroke-width="0.5"/>
+      <text class="th" x="520" y="549" text-anchor="middle" dominant-baseline="central">Logistics Reports</text>
+      <text class="ts" x="520" y="567" text-anchor="middle" dominant-baseline="central">delivery times, SLA</text>
+    </g>
+
+    <!-- Legend -->
+    <rect class="c-blue"   x="90"  y="640" width="14" height="14" rx="3"/>
+    <text class="ts" x="108" y="651">Master data</text>
+    <rect class="c-teal"   x="200" y="640" width="14" height="14" rx="3"/>
+    <text class="ts" x="218" y="651">Sales</text>
+    <rect class="c-amber"  x="280" y="640" width="14" height="14" rx="3"/>
+    <text class="ts" x="298" y="651">Inventory</text>
+    <rect class="c-coral"  x="375" y="640" width="14" height="14" rx="3"/>
+    <text class="ts" x="393" y="651">Logistics</text>
+    <rect class="c-purple" x="460" y="640" width="14" height="14" rx="3"/>
+    <text class="ts" x="478" y="651">Reporting</text>
+  </svg>
+</div>
+
+<!-- ═══════════════ TAB 2: NORMALIZATION ═══════════════ -->
+<div class="tab-pane" id="tab-norm">
+  <div class="section-header"><div class="badge">Normal Forms</div><h3>Database normalization applied to each module</h3></div>
+
+  <div class="norm-grid">
+    <div class="norm-card">
+      <span class="nf-label nf1">1NF — First Normal Form</span>
+      <h4>Atomic values, no repeating groups</h4>
+      <p>Applied across all tables. Each column holds one value per row.</p>
+      <ul>
+        <li>No comma-separated product IDs in orders</li>
+        <li>No multi-value phone fields in customers</li>
+        <li>Each order item is its own row in <code>order_items</code></li>
+        <li>Tracking events split into separate rows</li>
+      </ul>
+    </div>
+    <div class="norm-card">
+      <span class="nf-label nf2">2NF — Second Normal Form</span>
+      <h4>No partial dependencies on composite keys</h4>
+      <p>Applies to tables with composite PKs like <code>order_items</code>.</p>
+      <ul>
+        <li><code>product_name</code> removed from order_items — lives in products only</li>
+        <li><code>customer_email</code> not stored in orders table</li>
+        <li><code>warehouse_name</code> not duplicated in inventory</li>
+        <li>Supplier info lives in suppliers, not purchase_orders</li>
+      </ul>
+    </div>
+    <div class="norm-card">
+      <span class="nf-label nf3">3NF — Third Normal Form</span>
+      <h4>No transitive dependencies</h4>
+      <p>Non-key attributes depend only on the primary key.</p>
+      <ul>
+        <li>Category details extracted to <code>categories</code> table</li>
+        <li>Carrier info in its own <code>carriers</code> reference table</li>
+        <li>Warehouse <code>city/region</code> not derived from <code>zip_code</code></li>
+        <li>Tax rate stored by region, not duplicated per order</li>
+      </ul>
+    </div>
+    <div class="norm-card">
+      <span class="nf-label bcnf">BCNF — Boyce-Codd NF</span>
+      <h4>Every determinant is a candidate key</h4>
+      <p>Ensures no anomalies in edge cases beyond 3NF.</p>
+      <ul>
+        <li>SKU uniquely identifies product — no alternate FD paths</li>
+        <li>Tracking number determines shipment uniquely</li>
+        <li>Product–warehouse pair is the composite key for inventory</li>
+        <li>Verified no overlapping candidate keys exist</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-header" style="margin-top:1.5rem"><div class="badge">Applied Rules</div><h3>Denormalization decisions for performance</h3></div>
+  <div class="card">
+    <table style="width:100%;font-size:13px;border-collapse:collapse;">
+      <thead>
+        <tr style="border-bottom:0.5px solid var(--color-border-tertiary)">
+          <th style="text-align:left;padding:6px 0;font-weight:500;color:var(--color-text-secondary)">Table</th>
+          <th style="text-align:left;padding:6px 0;font-weight:500;color:var(--color-text-secondary)">Denormalized field</th>
+          <th style="text-align:left;padding:6px 0;font-weight:500;color:var(--color-text-secondary)">Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:0.5px solid var(--color-border-tertiary)">
+          <td style="padding:6px 0;font-family:var(--font-mono);font-size:12px">sales_orders</td>
+          <td style="padding:6px 0;font-family:var(--font-mono);font-size:12px;color:var(--color-text-info)">order_total</td>
+          <td style="padding:6px 0;color:var(--color-text-secondary)">Pre-computed sum to avoid JOIN on every report</td>
+        </tr>
+        <tr style="border-bottom:0.5px solid var(--color-border-tertiary)">
+          <td style="padding:6px 0;font-family:var(--font-mono);font-size:12px">inventory</td>
+          <td style="padding:6px 0;font-family:var(--font-mono);font-size:12px;color:var(--color-text-info)">qty_reserved</td>
+          <td style="padding:6px 0;color:var(--color-text-secondary)">Cached count of open-order reservations</td>
+        </tr>
+        <tr>
+          <td style="padding:6px 0;font-family:var(--font-mono);font-size:12px">shipments</td>
+          <td style="padding:6px 0;font-family:var(--font-mono);font-size:12px;color:var(--color-text-info)">last_status</td>
+          <td style="padding:6px 0;color:var(--color-text-secondary)">Latest tracking status cached for dashboard speed</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB 3: SCHEMA ═══════════════ -->
+<div class="tab-pane" id="tab-schema">
+  <div class="section-header"><div class="badge">MySQL DDL</div><h3>Table schemas with data types and constraints</h3></div>
+  <div class="schema-grid">
+
+    <!-- customers -->
+    <div class="schema-table">
+      <div class="tbl-head" style="background:var(--color-background-info)">
+        <span style="color:var(--color-text-info);font-weight:500">customers</span>
+        <span class="engine">InnoDB · UTF8MB4</span>
+      </div>
+      <table>
+        <tr><td>customer_id</td><td>INT UNSIGNED</td><td><span class="pk-icon">PK</span> AUTO_INCREMENT</td></tr>
+        <tr><td>first_name</td><td>VARCHAR(80)</td><td>NOT NULL</td></tr>
+        <tr><td>last_name</td><td>VARCHAR(80)</td><td>NOT NULL</td></tr>
+        <tr><td>email</td><td>VARCHAR(255)</td><td>UNIQUE NOT NULL</td></tr>
+        <tr><td>phone</td><td>VARCHAR(20)</td><td></td></tr>
+        <tr><td>created_at</td><td>DATETIME</td><td>DEFAULT NOW()</td></tr>
+      </table>
+    </div>
+
+    <!-- products -->
+    <div class="schema-table">
+      <div class="tbl-head" style="background:var(--color-background-info)">
+        <span style="color:var(--color-text-info);font-weight:500">products</span>
+        <span class="engine">InnoDB · UTF8MB4</span>
+      </div>
+      <table>
+        <tr><td>product_id</td><td>INT UNSIGNED</td><td><span class="pk-icon">PK</span> AUTO_INCREMENT</td></tr>
+        <tr><td>sku</td><td>VARCHAR(50)</td><td>UNIQUE NOT NULL</td></tr>
+        <tr><td>product_name</td><td>VARCHAR(200)</td><td>NOT NULL</td></tr>
+        <tr><td>category_id</td><td>INT UNSIGNED</td><td><span class="fk-icon">FK</span> categories</td></tr>
+        <tr><td>unit_price</td><td>DECIMAL(10,2)</td><td>NOT NULL</td></tr>
+        <tr><td>weight_kg</td><td>DECIMAL(8,3)</td><td></td></tr>
+        <tr><td>is_active</td><td>TINYINT(1)</td><td>DEFAULT 1</td></tr>
+      </table>
+    </div>
+
+    <!-- suppliers -->
+    <div class="schema-table">
+      <div class="tbl-head" style="background:var(--color-background-info)">
+        <span style="color:var(--color-text-info);font-weight:500">suppliers</span>
+        <span class="engine">InnoDB · UTF8MB4</span>
+      </div>
+      <table>
+        <tr><td>supplier_id</td><td>INT UNSIGNED</td><td><span class="pk-icon">PK</span> AUTO_INCREMENT</td></tr>
+        <tr><td>supplier_name</td><td>VARCHAR(150)</td><td>NOT NULL</td></tr>
+        <tr><td>contact_name</td><td>VARCHAR(100)</td><td></td></tr>
+        <tr><td>email</td><td>VARCHAR(255)</td><td></td></tr>
+        <tr><td>country</td><td>CHAR(2)</td><td>ISO 3166-1</td></tr>
+        <tr><td>lead_time_days</td><td>SMALLINT</td><td>DEFAULT 7</td></tr>
+      </table>
+    </div>
+
+    <!-- warehouses -->
+    <div class="schema-table">
+      <div class="tbl-head" style="background:var(--color-background-warning)">
+        <span style="color:var(--color-text-warning);font-weight:500">warehouses</span>
+        <span class="engine">InnoDB · UTF8MB4</span>
+      </div>
+      <table>
+        <tr><td>warehouse_id</td><td>INT UNSIGNED</td><td><span class="pk-icon">PK</span> AUTO_INCREMENT</td></tr>
+        <tr><td>warehouse_name</td><td>VARCHAR(100)</td><td>NOT NULL</td></tr>
+        <tr><td>address_line</td><td>VARCHAR(255)</td><td></td></tr>
+        <tr><td>city</td><td>VARCHAR(100)</td><td></td></tr>
+        <tr><td>country</td><td>CHAR(2)</td><td></td></tr>
+        <tr><td>capacity_m3</td><td>DECIMAL(10,2)</td><td></td></tr>
+      </table>
+    </div>
+
+    <!-- inventory -->
+    <div class="schema-table">
+      <div class="tbl-head" style="background:var(--color-background-warning)">
+        <span style="color:var(--color-text-warning);font-weight:500">inventory</span>
+        <span class="engine">InnoDB · UTF8MB4</span>
+      </div>
+      <table>
+        <tr><td>inventory_id</td><td>INT UNSIGNED</td><td><span class="pk-icon">PK</span> AUTO_INCREMENT</td></tr>
+        <tr><td>product_id</td><td>INT UNSIGNED</td><td><span class="fk-icon">FK</span> products</td></tr>
+        <tr><td>warehouse_id</td><td>INT UNSIGNED</td><td><span class="fk-icon">FK</span> warehouses</td></tr>
+        <tr><td>qty_on_hand</td><td>INT</td><td>NOT NULL DEFAULT 0</td></tr>
+        <tr><td>qty_reserved</td><td>INT</td><td>DEFAULT 0</td></tr>
+        <tr><td>reorder_point</td><td>INT</td><td>DEFAULT 10</td></tr>
+        <tr><td>updated_at</td><td>DATETIME</td><td>ON UPDATE NOW()</td></tr>
+      </table>
+    </div>
+
+    <!-- sales_orders -->
+    <div class="schema-table">
+      <div class="tbl-head" style="background:var(--color-background-success)">
+        <span style="color:var(--color-text-success);font-weight:500">sales_orders</span>
+        <span class="engine">InnoDB · UTF8MB4</span>
+      </div>
+      <table>
+        <tr><td>order_id</td><td>INT UNSIGNED</td><td><span class="pk-icon">PK</span> AUTO_INCREMENT</td></tr>
+        <tr><td>customer_id</td><td>INT UNSIGNED</td><td><span class="fk-icon">FK</span> customers</td></tr>
+        <tr><td>order_date</td><td>DATETIME</td><td>NOT NULL</td></tr>
+        <tr><td>status</td><td>ENUM</td><td>pending|confirmed|shipped|cancelled</td></tr>
+        <tr><td>order_total</td><td>DECIMAL(12,2)</td><td>denorm. cache</td></tr>
+        <tr><td>shipping_address</td><td>TEXT</td><td></td></tr>
+        <tr><td>notes</td><td>TEXT</td><td></td></tr>
+      </table>
+    </div>
+
+    <!-- order_items -->
+    <div class="schema-table">
+      <div class="tbl-head" style="background:var(--color-background-success)">
+        <span style="color:var(--color-text-success);font-weight:500">order_items</span>
+        <span class="engine">InnoDB · UTF8MB4</span>
+      </div>
+      <table>
+        <tr><td>item_id</td><td>INT UNSIGNED</td><td><span class="pk-icon">PK</span> AUTO_INCREMENT</td></tr>
+        <tr><td>order_id</td><td>INT UNSIGNED</td><td><span class="fk-icon">FK</span> sales_orders</td></tr>
+        <tr><td>product_id</td><td>INT UNSIGNED</td><td><span class="fk-icon">FK</span> products</td></tr>
+        <tr><td>quantity</td><td>SMALLINT UNSIGNED</td><td>NOT NULL</td></tr>
+        <tr><td>unit_price</td><td>DECIMAL(10,2)</td><td>snapshot at sale</td></tr>
+        <tr><td>discount_pct</td><td>DECIMAL(5,2)</td><td>DEFAULT 0.00</td></tr>
+      </table>
+    </div>
+
+    <!-- shipments -->
+    <div class="schema-table">
+      <div class="tbl-head" style="background:var(--color-background-danger)">
+        <span style="color:var(--color-text-danger);font-weight:500">shipments</span>
+        <span class="engine">InnoDB · UTF8MB4</span>
+      </div>
+      <table>
+        <tr><td>shipment_id</td><td>INT UNSIGNED</td><td><span class="pk-icon">PK</span> AUTO_INCREMENT</td></tr>
+        <tr><td>order_id</td><td>INT UNSIGNED</td><td><span class="fk-icon">FK</span> sales_orders</td></tr>
+        <tr><td>warehouse_id</td><td>INT UNSIGNED</td><td><span class="fk-icon">FK</span> warehouses</td></tr>
+        <tr><td>tracking_number</td><td>VARCHAR(100)</td><td>UNIQUE</td></tr>
+        <tr><td>carrier</td><td>VARCHAR(80)</td><td></td></tr>
+        <tr><td>shipped_at</td><td>DATETIME</td><td></td></tr>
+        <tr><td>expected_delivery</td><td>DATE</td><td></td></tr>
+        <tr><td>last_status</td><td>VARCHAR(60)</td><td>denorm. cache</td></tr>
+      </table>
+    </div>
+
+    <!-- tracking_events -->
+    <div class="schema-table">
+      <div class="tbl-head" style="background:var(--color-background-danger)">
+        <span style="color:var(--color-text-danger);font-weight:500">tracking_events</span>
+        <span class="engine">InnoDB · UTF8MB4</span>
+      </div>
+      <table>
+        <tr><td>event_id</td><td>INT UNSIGNED</td><td><span class="pk-icon">PK</span> AUTO_INCREMENT</td></tr>
+        <tr><td>shipment_id</td><td>INT UNSIGNED</td><td><span class="fk-icon">FK</span> shipments</td></tr>
+        <tr><td>event_time</td><td>DATETIME</td><td>NOT NULL</td></tr>
+        <tr><td>location</td><td>VARCHAR(200)</td><td></td></tr>
+        <tr><td>status_code</td><td>VARCHAR(40)</td><td></td></tr>
+        <tr><td>description</td><td>TEXT</td><td></td></tr>
+      </table>
+    </div>
+
+    <!-- purchase_orders -->
+    <div class="schema-table">
+      <div class="tbl-head" style="background:var(--color-background-warning)">
+        <span style="color:var(--color-text-warning);font-weight:500">purchase_orders</span>
+        <span class="engine">InnoDB · UTF8MB4</span>
+      </div>
+      <table>
+        <tr><td>po_id</td><td>INT UNSIGNED</td><td><span class="pk-icon">PK</span> AUTO_INCREMENT</td></tr>
+        <tr><td>supplier_id</td><td>INT UNSIGNED</td><td><span class="fk-icon">FK</span> suppliers</td></tr>
+        <tr><td>warehouse_id</td><td>INT UNSIGNED</td><td><span class="fk-icon">FK</span> warehouses</td></tr>
+        <tr><td>po_date</td><td>DATE</td><td>NOT NULL</td></tr>
+        <tr><td>expected_date</td><td>DATE</td><td></td></tr>
+        <tr><td>status</td><td>ENUM</td><td>draft|sent|received</td></tr>
+        <tr><td>total_cost</td><td>DECIMAL(12,2)</td><td></td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ TAB 4: ERD ═══════════════ -->
+<div class="tab-pane" id="tab-erd">
+  <div class="section-header"><div class="badge">ERD</div><h3>Entity Relationship Diagram — crow's foot notation</h3></div>
+  <div id="erd-mount"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--color-background-info);border:1px solid var(--color-border-info)"></div>Master data</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--color-background-success);border:1px solid var(--color-border-success)"></div>Sales</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--color-background-warning);border:1px solid var(--color-border-warning)"></div>Inventory</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--color-background-danger);border:1px solid var(--color-border-danger)"></div>Logistics</div>
+    <div class="legend-item"><span style="font-size:12px;font-family:var(--font-mono)">||--o{</span>&nbsp;one-to-many</div>
+    <div class="legend-item"><span style="font-size:12px;font-family:var(--font-mono)">}o--o{</span>&nbsp;many-to-many</div>
+  </div>
+</div>
+
+</div><!-- end db-wrap -->
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelector('[onclick="showTab(\''+id+'\')"]').classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  if (id === 'erd' && !window._erdLoaded) loadErd();
+}
+
+window._erdLoaded = false;
+async function loadErd() {
+  window._erdLoaded = true;
+  const { default: mermaid } = await import('https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs');
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  await document.fonts.ready;
+  mermaid.initialize({
+    startOnLoad: false, theme: 'base',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    themeVariables: {
+      darkMode: dark, fontSize: '13px',
+      fontFamily: '"Anthropic Sans", sans-serif',
+      lineColor: dark ? '#9c9a92' : '#73726c',
+      textColor: dark ? '#c2c0b6' : '#3d3d3a',
+    },
+  });
+
+  const diagram = `erDiagram
+    customers {
+      int customer_id PK
+      varchar first_name
+      varchar last_name
+      varchar email
+      varchar phone
+    }
+    categories {
+      int category_id PK
+      varchar category_name
+      int parent_id
+    }
+    products {
+      int product_id PK
+      varchar sku
+      varchar product_name
+      int category_id FK
+      decimal unit_price
+      decimal weight_kg
+      tinyint is_active
+    }
+    suppliers {
+      int supplier_id PK
+      varchar supplier_name
+      varchar contact_name
+      varchar email
+      char country
+      smallint lead_time_days
+    }
+    warehouses {
+      int warehouse_id PK
+      varchar warehouse_name
+      varchar city
+      char country
+      decimal capacity_m3
+    }
+    inventory {
+      int inventory_id PK
+      int product_id FK
+      int warehouse_id FK
+      int qty_on_hand
+      int qty_reserved
+      int reorder_point
+    }
+    purchase_orders {
+      int po_id PK
+      int supplier_id FK
+      int warehouse_id FK
+      date po_date
+      enum status
+      decimal total_cost
+    }
+    po_items {
+      int po_item_id PK
+      int po_id FK
+      int product_id FK
+      int quantity
+      decimal unit_cost
+    }
+    sales_orders {
+      int order_id PK
+      int customer_id FK
+      datetime order_date
+      enum status
+      decimal order_total
+    }
+    order_items {
+      int item_id PK
+      int order_id FK
+      int product_id FK
+      smallint quantity
+      decimal unit_price
+      decimal discount_pct
+    }
+    shipments {
+      int shipment_id PK
+      int order_id FK
+      int warehouse_id FK
+      varchar tracking_number
+      varchar carrier
+      datetime shipped_at
+      date expected_delivery
+    }
+    tracking_events {
+      int event_id PK
+      int shipment_id FK
+      datetime event_time
+      varchar location
+      varchar status_code
+    }
+    customers ||--o{ sales_orders : "places"
+    categories ||--o{ products : "classifies"
+    products ||--o{ order_items : "included in"
+    products ||--o{ inventory : "stocked as"
+    products ||--o{ po_items : "ordered via"
+    suppliers ||--o{ purchase_orders : "fulfills"
+    warehouses ||--o{ inventory : "stores"
+    warehouses ||--o{ purchase_orders : "receives at"
+    warehouses ||--o{ shipments : "dispatches from"
+    sales_orders ||--o{ order_items : "contains"
+    sales_orders ||--o{ shipments : "fulfilled by"
+    shipments ||--o{ tracking_events : "has"
+    purchase_orders ||--o{ po_items : "contains"
+  `;
+
+  const { svg } = await mermaid.render('erd-svg', diagram);
+  document.getElementById('erd-mount').innerHTML = svg;
+
+  document.querySelectorAll('#erd-mount svg .node').forEach(node => {
+    const firstPath = node.querySelector('path[d]');
+    if (!firstPath) return;
+    const d = firstPath.getAttribute('d');
+    const nums = d.match(/-?[\d.]+/g)?.map(Number);
+    if (!nums || nums.length < 8) return;
+    const xs = [nums[0], nums[2], nums[4], nums[6]];
+    const ys = [nums[1], nums[3], nums[5], nums[7]];
+    const x = Math.min(...xs), y = Math.min(...ys);
+    const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', x); rect.setAttribute('y', y);
+    rect.setAttribute('width', w); rect.setAttribute('height', h);
+    rect.setAttribute('rx', '8');
+    for (const a of ['fill','stroke','stroke-width','class','style']) {
+      if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+    }
+    firstPath.replaceWith(rect);
+  });
+
+  document.querySelectorAll('#erd-mount svg .row-rect-odd path, #erd-mount svg .row-rect-even path').forEach(p => {
+    p.setAttribute('stroke', 'none');
+  });
+}
+</script>

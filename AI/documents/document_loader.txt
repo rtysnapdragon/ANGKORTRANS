@@ -1,0 +1,100 @@
+BUSINESS FLOW PLANNING — COMPANY OVERVIEW
+==========================================
+
+COMPANY: TechFlow Solutions
+INDUSTRY: Software & Digital Transformation
+
+--- SERVICES & PRODUCTS ---
+
+1. CUSTOM SOFTWARE DEVELOPMENT
+   - Web application development (React, Vue, Django, Node.js)
+   - Mobile app development (iOS & Android)
+   - API design and integration
+   - Database architecture and optimization
+   - Estimated timeline: 2–6 months depending on scope
+   - Pricing: Starting from $5,000 for MVPs; enterprise solutions quoted separately
+
+2. DIGITAL TRANSFORMATION CONSULTING
+   - Business process analysis and automation
+   - Cloud migration (AWS, GCP, Azure)
+   - Legacy system modernization
+   - Team training and onboarding
+   - Pricing: $200/hour consulting rate; project-based packages available
+
+3. AI & DATA SOLUTIONS
+   - Machine learning model development
+   - Data pipeline engineering
+   - Business intelligence dashboards
+   - Chatbot and virtual assistant integration
+   - Natural language processing solutions
+   - Pricing: Starting from $8,000 per project
+
+4. MANAGED IT SERVICES
+   - 24/7 system monitoring
+   - Security audits and compliance
+   - DevOps and CI/CD pipeline setup
+   - Cloud infrastructure management
+   - Monthly retainer: $1,500–$5,000/month
+
+--- BUSINESS FLOW PROCESS ---
+
+STEP 1 — INITIAL CONSULTATION
+   - Customer contacts us via chat, email, or phone
+   - Free 30-minute discovery call scheduled
+   - We collect requirements, budget range, and timeline expectations
+
+STEP 2 — PROPOSAL & SCOPING
+   - We prepare a detailed technical proposal within 3–5 business days
+   - Includes project milestones, team composition, and cost breakdown
+   - NDA signed if required
+
+STEP 3 — CONTRACT & KICKOFF
+   - Contract signed with payment schedule (30% upfront, 40% mid, 30% delivery)
+   - Kickoff meeting with dedicated project manager
+   - Access to project management tools (Jira, Slack workspace)
+
+STEP 4 — DEVELOPMENT & DELIVERY
+   - Agile sprints (2-week cycles)
+   - Weekly progress reports and demos
+   - QA and testing before each delivery milestone
+
+STEP 5 — LAUNCH & SUPPORT
+   - Deployment to production environment
+   - 30-day post-launch support included
+   - Optional ongoing maintenance packages
+
+--- FAQ & COMMON CUSTOMER QUESTIONS ---
+
+Q: How long does a typical project take?
+A: Small projects (landing pages, simple apps): 2–4 weeks. Medium projects: 1–3 months. Large enterprise systems: 3–6+ months.
+
+Q: Do you offer a free trial or prototype?
+A: Yes, we offer a free prototype/wireframe session for projects over $10,000. For smaller projects, we provide detailed mockups before development begins.
+
+Q: What industries do you serve?
+A: We serve e-commerce, healthcare, fintech, logistics, education, hospitality, and government sectors.
+
+Q: Can you work with our existing team?
+A: Absolutely. We offer team augmentation services where our developers integrate directly with your in-house team.
+
+Q: What technologies do you use?
+A: Backend: Django, Node.js, FastAPI, Laravel. Frontend: React, Vue, Nuxt, Next.js. Mobile: Flutter, React Native. Cloud: AWS, GCP, Azure. AI: TensorFlow, PyTorch, Google Gemini, OpenAI.
+
+Q: Is my data secure?
+A: Yes. We follow ISO 27001 practices, use encrypted communication, and sign NDAs. All projects are stored in private repositories.
+
+Q: What is your payment method?
+A: Bank transfer, PayPal, Stripe, and cryptocurrency (USDT/BTC) accepted.
+
+--- CONTACT & SUPPORT ---
+
+Email: hello@techflowsolutions.com
+Phone: +1 (555) 0100
+Live Chat: Available Mon–Fri, 9AM–6PM (UTC+7)
+Office: 123 Innovation Street, Tech District, Phnom Penh, Cambodia
+
+--- SPECIAL OFFERS ---
+
+- Startup Package: 20% discount for early-stage startups (proof of incorporation required)
+- Referral Program: $500 credit for every successful referral
+- Seasonal Promotions: Check our website for current deals
