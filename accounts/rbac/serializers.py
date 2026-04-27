@@ -92,7 +92,7 @@ class PermissionSerializer(serializers.ModelSerializer):
 
 
 class RolePermissionSerializer(serializers.ModelSerializer):
-    Role = RoleSerializer(source='ROLE_ID', read_only=True)
+    Role = RoleSerializer(source='ID', read_only=True)
     Permission = PermissionSerializer(source='PERMISSION_ID', read_only=True)
     RoleID = serializers.PrimaryKeyRelatedField(
         source='ROLE_ID', 

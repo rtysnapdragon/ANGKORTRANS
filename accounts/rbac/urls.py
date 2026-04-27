@@ -6,23 +6,20 @@ from .views import (
     RolePermissionViewSet, UserViewSet
 )
 
-router = DefaultRouter()
-router.register(r'roles', RoleViewSet, basename='role')
-router.register(r'user-roles', UserRoleViewSet, basename='userrole')
-router.register(r'permissions', PermissionViewSet, basename='permission')
-router.register(r'role-permissions', RolePermissionViewSet, basename='rolepermission')
-router.register(r'users', UserViewSet, basename='user')
-
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('api/roles/', RoleViewSet.as_view({'get': 'list'})),  # List all roles
+    # path('api/user', UserRoleViewSet),  # List user-role assignments
+    # path('api/permission', PermissionViewSet),  # List all permissions
+    # path('api/role-permission', RolePermissionViewSet),  # List role-permission assignments
+    # path('api/user/assign-role', UserViewSet.assign_role),
 ]
 
 # API Endpoints:
-# GET     /api/roles/                    - List all roles
-# POST    /api/roles/                    - Create role
-# GET     /api/roles/{id}/               - Get role details
-# PUT     /api/roles/{id}/               - Update role
-# DELETE  /api/roles/{id}/               - Delete role
+# GET     /api/role/                    - List all roles
+# POST    /api/role/                    - Create role
+# GET     /api/role/{id}/               - Get role details
+# PUT     /api/role/{id}/               - Update role
+# DELETE  /api/role/{id}/               - Delete role
 # GET     /api/roles/{id}/permissions/   - Get role permissions
 # POST    /api/roles/{id}/assign_permission/ - Assign permission to role
 #

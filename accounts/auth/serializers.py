@@ -11,14 +11,10 @@ from admin_address.models import Country, Province, District, Commune, Village
 from rest_framework import serializers
 from .models import User
 
-
-
 class RefreshTokenResponseSerializer(serializers.Serializer):
     AccessToken = serializers.CharField()
     RefreshToken = serializers.CharField()
     
-
-
 class LoginSerializer(serializers.Serializer):
     UsernameOrEmail = serializers.CharField()
     Password = serializers.CharField(write_only=True)
