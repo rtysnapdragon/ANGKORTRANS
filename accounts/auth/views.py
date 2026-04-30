@@ -60,16 +60,137 @@ def register11(request):
 
     return Response(serializer.errors, status=400)
 
+import uuid
+from rest_framework_simplejwt.tokens import RefreshToken
+import random
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
 
     data = request.data
+    print("Register endpoint called with data:", data)
 
     # =========================
     # 1. REQUIRED FIELD CHECK
     # =========================
-    required_fields = ["Code", "Username", "Email", "Password", "Name"]
+    required_fields = ["Name", "Username", "Email", "Password"]
+
+    errors = {}
+    for field in required_fields:
+        if not data.get(field):
+            errors[field] = "This field is required"
+
+    if errors:
+        return Response({
+            "message": "Validation error",
+            "errors": errors
+        }, status=400)
+
+    try:
+        with transaction.atomic():
+
+            # =========================
+            # SYSTEM USER
+            # =========================
+            system_user = User.objects.filter(ID=1).first()
+
+            if not system_user:
+                return Response({
+                    "message": "System user (ID=1) not found"
+                }, status=500)
+
+            # =========================
+            # 2. DUPLICATE CHECK
+            # =========================
+            if User.objects.filter(EMAIL=data["Email"]).exists():
+                return Response({"Email": "Email already exists"}, status=400)
+
+            if User.objects.filter(USERNAME=data["Username"]).exists():
+                return Response({"Username": "Username already exists"}, status=400)
+
+            # =========================
+            # 3. GENERATE CODE
+            # =========================
+            # generated_code = str(uuid.uuid4())[:8].upper()
+            # generated_code = "ANONYMOUS0000" + ''.join(str(random.randint(0, 9)) for _ in range(8))
+            # counter = 1
+            # generated_code = f"ANONYMOUS0000{counter}"
+            # counter += 1
+            
+            user_count = User.objects.count()
+            generated_code = f"ANONYMOUS0000{user_count}"
+            
+            print(" Generated code ::::::::::: ", generated_code)
+            print(" system_user  ======>   ", system_user)
+            print(" system_user.ID  ======>   ", system_user.ID)
+            
+            # =========================
+            # 4. CREATE USER
+            # =========================
+            user = User.objects.create(
+                CODE=generated_code,
+                USERNAME=data["Username"],
+                EMAIL=data["Email"],
+                USER_TYPE="USER",
+                STATUS="ACTIVE",
+
+                IS_SUPERUSER=False,
+                EMAIL_VERIFIED=False,
+                PHONE_VERIFIED=False,
+                FAILED_LOGIN_ATTEMPTS=0,
+                IS_DELETED=False,
+
+                CREATED_BY=system_user
+            )
+
+            user.set_password(data["Password"])
+            user.save()
+
+            # =========================
+            # 5. CREATE PROFILE
+            # =========================
+            UserProfile.objects.create(
+                user_profile_user_id=user,
+                NAME=data["Name"],
+                CREATED_BY=system_user
+            )
+
+            # =========================
+            # 6. GENERATE JWT TOKEN
+            # =========================
+            refresh = RefreshToken.for_user(user)
+
+            return Response({
+                "Message": "User registered successfully",
+                "AccessToken": str(refresh.access_token),
+                "RefreshToken": str(refresh),
+                "User": {
+                    "id": user.ID,
+                    "username": user.USERNAME,
+                    "email": user.EMAIL,
+                    "name": data["Name"]
+                }
+            }, status=201)
+
+    except Exception as e:
+        return Response({
+            "message": "Registration failed",
+            "error": str(e)
+        }, status=400)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def create_user(request):
+
+    data = request.data
+    print("Register endpoint called with data:", data)
+
+    # =========================
+    # 1. REQUIRED FIELD CHECK
+    # =========================
+    required_fields = ["Name", "Username", "Email", "Password"]
 
     errors = {}
     for field in required_fields:
@@ -91,6 +212,7 @@ def register(request):
             # system_user = User.objects.filter(USERNAME="admin").first()
             # system_user = User.objects.get(ID=1)
             system_user = User.objects.filter(ID=1).first()
+            print(" System user ::::::::::: ", system_user)
 
             if not system_user:
                 return Response({
@@ -128,7 +250,7 @@ def register(request):
                 FAILED_LOGIN_ATTEMPTS=0,
                 IS_DELETED=False,
 
-                CREATED_BY=1  # SYSTEM AUDIT
+                CREATED_BY= system_user.ID   # SYSTEM AUDIT
             )
 
             user.set_password(data["Password"])
@@ -192,13 +314,17 @@ def register(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def auth_login(request):
+    print("Login endpoint called with data:", request.data)
     """Login - Returns JWT Access + Refresh Token"""
     serializer = LoginSerializer(data=request.data)
+    print("Login serializer: ", serializer)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     username_or_email = serializer.validated_data['UsernameOrEmail']
     password = serializer.validated_data['Password']
+    print("Login username_or_email: ", username_or_email)
+    print("Login password: ", password)
 
     try:
         user = User.objects.get(EMAIL=username_or_email)
@@ -234,6 +360,10 @@ def auth_login(request):
     user.save()
 
     # Generate JWT tokens
+    user = User.objects.get(ID=user.ID)
+    # user_profile = UserProfile.objects.get(USER_ID=user)
+    print("User: ", user)
+    # print("User profile: ", user_profile)
     refresh = RefreshToken.for_user(user)   # SimpleJWT handles this
 
     log_auth_event(user, 'LOGIN', 'Login successful', request, success=True)
@@ -241,7 +371,7 @@ def auth_login(request):
     return Response({
         "AccessToken": str(refresh.access_token),
         "RefreshToken": str(refresh),
-        # "User": Usererializer(user).data
+        "User": UserSerializer(user).data
     })
 
 
@@ -279,7 +409,7 @@ def login(request):
     return Response({
         "AccessToken": str(refresh.access_token),
         "RefreshToken": str(refresh),
-        "User": Usererializer(user).data
+        "User": UserSerializer(user).data
     })
 
 def log_auth_event(user, event_type, description, request, success=True):
@@ -376,7 +506,7 @@ def auth_me(request):
     """Get current user info (requires valid AccessToken in header)"""
     if not request.user.is_authenticated:
         return Response({"Message": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
-    return Response(Usererializer(request.user).data)
+    return Response(UserSerializer(request.user).data)
 
 
 
@@ -691,6 +821,7 @@ from urllib.parse import parse_qs
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def oauth_token(request):
+    print("oauth_token")
 
     # 🔥 READ RAW BODY (important)
     body = request.body.decode('utf-8')
@@ -776,9 +907,9 @@ from core.utils.decryption import decrypt_cryptojs
 from core.utils.jwt import generate_jwt_token, decode_jwt_token
 from core.utils.jwt_handler import generate_tokens
 from accounts.users.models import Users as User
-from accounts.auth.serializers import UserLoginSerializer
+from accounts.auth.serializers import UserLoginSerializer,LoginSerializer
 from accounts.users.serializers import UserSerializer
-from accounts.auth_serializers import LoginSerializer
+# from accounts.auth_serializers import LoginSerializer
 from core.utils.jwt import GENERATE_REMEMBER_TOKEN
 
 # Determine if running in production

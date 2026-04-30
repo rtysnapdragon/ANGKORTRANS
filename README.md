@@ -49,6 +49,11 @@ pip install djangorestframework-simplejwt
 
 pip install drf-spectacular ##OpenAPI docs with Swagger UI.
 
+pip install channels channels-redis
+pip install daphne
+run with ws:
+daphne ANGKORTRANS.asgi:application
+
  No module named 'Crypto' install below
  pip install pycryptodome
 ### Check list package
@@ -60,6 +65,18 @@ pip install -r requirements.txt
 
 
 pip install gunicorn
+pip install redis celery
+
+
+## Install packages to venv or environment
+``` bash
+Activate your virtual environment, then install Pillow:
+python -m pip install Pillow
+
+
+if have already please install:
+pip install Pillow
+```
 
 ## Issue with git push with security rejection
 ```

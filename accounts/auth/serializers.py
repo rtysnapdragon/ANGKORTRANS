@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (
-    User, Role, UserRole, Permission, RolePermission,
+    User, Roles, UserRole, Permissions, RolePermission,
     RefreshToken, AuthAuditLog,
     UserOTP, LoginHistory,ForgotOrResetPassword
 )
@@ -18,16 +18,20 @@ class RefreshTokenResponseSerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     UsernameOrEmail = serializers.CharField()
     Password = serializers.CharField(write_only=True)
-    
+
 class RefreshTokenSerializer(serializers.Serializer):
     RefreshToken = serializers.CharField()
 
 class RegisterSerializer(serializers.Serializer):
-    Code = serializers.CharField()
+    # Code = serializers.CharField()
+    Code = serializers.CharField(read_only=True)
     Username = serializers.CharField()
     Email = serializers.EmailField()
     Password = serializers.CharField(write_only=True)
     Name = serializers.CharField()
+    extra_kwargs = {
+        'Code': {'required': False},   # ✅ FIX
+    }
 
 class UserOTPSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,5 +54,5 @@ class ForgotOrResetPasswordSerializer(serializers.Serializer):
     
     
 class UserLoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
+    UsernameOrEmail = serializers.CharField()
+    Password = serializers.CharField(write_only=True)

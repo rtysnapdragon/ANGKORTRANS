@@ -4,7 +4,7 @@ from django.conf import settings
 from accounts.users.models import Users as User
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
-class Role(models.Model):
+class Roles(models.Model):
     ID = models.AutoField(primary_key=True)
     CODE = models.CharField(max_length=50, unique=True)
     NAME = models.CharField(max_length=100, db_column='ROLE_NAME')
@@ -22,7 +22,7 @@ class Role(models.Model):
 class UserRole(models.Model):
     ID = models.AutoField(primary_key=True, db_column='ID')
     USER_ID = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name="userrole_user_id", db_column='USER_ID')
-    ROLE_ID = models.ForeignKey(Role, on_delete=models.CASCADE,related_name="userrole_role_id", db_column='ROLE_ID')
+    ROLE_ID = models.ForeignKey(Roles, on_delete=models.CASCADE,related_name="userrole_role_id", db_column='ROLE_ID')
 
     CREATED_BY = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,related_name="userrole_created_by", db_column='CREATED_BY')
     CREATED_AT = models.DateTimeField(auto_now_add=True, db_column='CREATED_AT')
@@ -34,7 +34,7 @@ class UserRole(models.Model):
         unique_together = ('USER_ID', 'ROLE_ID')
 
 
-class Permission(models.Model):
+class Permissions(models.Model):
     ID = models.AutoField(primary_key=True, db_column='ID')
     CODE = models.CharField(max_length=100, unique=True, db_column='PERMISSION_CODE')
     NAME = models.CharField(max_length=150, db_column='PERMISSION_NAME')
@@ -51,8 +51,8 @@ class Permission(models.Model):
 
 class RolePermission(models.Model):
     ID = models.AutoField(primary_key=True, db_column='ID')
-    ROLE_ID = models.ForeignKey(Role, on_delete=models.CASCADE, db_column='ROLE_ID')
-    PERMISSION_ID = models.ForeignKey(Permission, on_delete=models.CASCADE, db_column='PERMISSION_ID')
+    ROLE_ID = models.ForeignKey(Roles, on_delete=models.CASCADE, db_column='ROLE_ID')
+    PERMISSION_ID = models.ForeignKey(Permissions, on_delete=models.CASCADE, db_column='PERMISSION_ID')
 
     CREATED_BY = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,related_name="rolepermission_created_by", db_column='CREATED_BY')
     CREATED_AT = models.DateTimeField(auto_now_add=True, db_column='CREATED_AT')

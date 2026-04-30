@@ -1,6 +1,6 @@
 # accounts/rbac/serializers.py
 from rest_framework import serializers
-from accounts.auth.models import Role, UserRole, Permission, RolePermission
+from accounts.auth.models import Roles, UserRole, Permissions, RolePermission
 
 
 class RoleSerializer(serializers.ModelSerializer):
@@ -10,7 +10,7 @@ class RoleSerializer(serializers.ModelSerializer):
     UpdatedAt = serializers.DateTimeField(source='UPDATED_AT', read_only=True)
     
     class Meta:
-        model = Role
+        model = Roles
         fields = [
             'ID', 'CODE', 'NAME', 'DESCRIPTION',
             'CreatedBy', 'CreatedAt', 'UpdatedBy', 'UpdatedAt'
@@ -55,7 +55,7 @@ class PermissionSerializer(serializers.ModelSerializer):
     UpdatedAt = serializers.DateTimeField(source='UPDATED_AT', read_only=True)
     
     class Meta:
-        model = Permission
+        model = Permissions
         fields = [
             'ID', 'CODE', 'NAME', 'DESCRIPTION',
             'CreatedBy', 'CreatedAt', 'UpdatedBy', 'UpdatedAt'
@@ -93,15 +93,15 @@ class PermissionSerializer(serializers.ModelSerializer):
 
 class RolePermissionSerializer(serializers.ModelSerializer):
     Role = RoleSerializer(source='ID', read_only=True)
-    Permission = PermissionSerializer(source='PERMISSION_ID', read_only=True)
+    permission = PermissionSerializer(source='PERMISSION_ID', read_only=True)
     RoleID = serializers.PrimaryKeyRelatedField(
         source='ROLE_ID', 
-        queryset=Role.objects.all(), 
+        queryset=Roles.objects.all(), 
         write_only=True
     )
     PermissionID = serializers.PrimaryKeyRelatedField(
         source='PERMISSION_ID', 
-        queryset=Permission.objects.all(), 
+        queryset=Permissions.objects.all(), 
         write_only=True
     )
     CreatedBy = serializers.SerializerMethodField(read_only=True)
@@ -134,16 +134,25 @@ class RolePermissionSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
 class UserRoleSerializer(serializers.ModelSerializer):
     Role = RoleSerializer(source='ROLE_ID', read_only=True)
+    # UserID = serializers.PrimaryKeyRelatedField(
+    #     source='USER_ID',
+    #     queryset=User.objects.all(),
+    #     write_only=True
+    # )
+
     UserID = serializers.PrimaryKeyRelatedField(
         source='USER_ID',
-        queryset=None,  # Set in __init__
+        queryset=User.objects.all(),
         write_only=True
     )
     RoleID = serializers.PrimaryKeyRelatedField(
         source='ROLE_ID',
-        queryset=Role.objects.all(),
+        queryset=Roles.objects.all(),
         write_only=True
     )
     CreatedBy = serializers.SerializerMethodField(read_only=True)
@@ -191,7 +200,7 @@ class RoleDetailSerializer(RoleSerializer):
         fields = RoleSerializer.Meta.fields + ['Permissions']
     
     def get_Permissions(self, obj):
-        permissions = Permission.objects.filter(
+        permissions = Permissions.objects.filter(
             rolepermission__ROLE_ID=obj
         ).distinct()
         return PermissionSerializer(permissions, many=True).data

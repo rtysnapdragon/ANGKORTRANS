@@ -5,11 +5,12 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from django.db import connections
 from django.utils import timezone
-from accounts.auth.models import Role, UserRole, Permission, RolePermission
+from accounts.auth.models import Roles, UserRole, Permissions, RolePermission
 from .serializers import (
     RoleSerializer, UserRoleSerializer, 
-    PermissionSerializer, RolePermissionSerializer, UserSerializer
+    PermissionSerializer, RolePermissionSerializer
 )
+from accounts.users.serializers import UserSerializer
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
@@ -61,11 +62,11 @@ class RoleViewSet(DynamicDatabaseMixin, viewsets.ModelViewSet):
     """ViewSet for Role management"""
     serializer_class = RoleSerializer
     permission_classes = [IsAuthenticated]
-    model = Role
+    model = Roles
     
     def get_queryset(self):
         db_alias = self._set_database_alias(self.request)
-        return Role.objects.using(db_alias).all()
+        return Roles.objects.using(db_alias).all()
     
     @action(detail=True, methods=['get'])
     def permissions(self, request, pk=None):
@@ -160,7 +161,7 @@ class PermissionViewSet(DynamicDatabaseMixin, viewsets.ModelViewSet):
     """ViewSet for Permission management"""
     serializer_class = PermissionSerializer
     permission_classes = [IsAuthenticated]
-    model = Permission
+    model = Permissions
     
     def get_queryset(self):
         db_alias = self._set_database_alias(self.request)
@@ -248,7 +249,7 @@ class UserViewSet(DynamicDatabaseMixin, viewsets.ReadOnlyModelViewSet):
         role_id = request.data.get('ROLE_ID')
         
         try:
-            role = Role.objects.using(db_alias).get(ID=role_id)
+            role = Roles.objects.using(db_alias).get(ID=role_id)
             
             with transaction.using(db_alias):
                 user_role, created = UserRole.objects.using(db_alias).get_or_create(
@@ -269,7 +270,7 @@ class UserViewSet(DynamicDatabaseMixin, viewsets.ReadOnlyModelViewSet):
                 serializer = UserRoleSerializer(user_role)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
                 
-        except Role.DoesNotExist:
+        except Roles.DoesNotExist:
             return Response(
                 {'error': 'Role not found'},
                 status=status.HTTP_404_NOT_FOUND

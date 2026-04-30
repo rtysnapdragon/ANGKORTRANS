@@ -78,11 +78,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    "channels",
+
    # your apps...
     'accounts',
     'api_app',
     'inventory',
     'admin_address',
+    'apps',
+    'apps.notifications',
+    'cms',
+    'cms.artworks',
+    'cms.comments',
 
     # DRF + Spectacular
     'rest_framework',          # if you use DRF
@@ -267,3 +274,31 @@ GOOGLE_AI_API_KEY = env('GOOGLE_AI_API_KEY')
  
 # Documents directory — place your .txt business flow files here
 DOCUMENTS_DIR = BASE_DIR / 'documents'
+
+ASGI_APPLICATION = 'ANGKORTRANS.asgi.application'
+
+
+DEBUG = True
+
+if DEBUG:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+        }
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [("127.0.0.1", 6379)],
+            },
+        }
+    }
+    
+## If Redis is only used for cache or queue: Temporarily disable Redis (if you just want Django to run)
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+#     }
+# }
