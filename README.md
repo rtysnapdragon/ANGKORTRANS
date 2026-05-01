@@ -149,6 +149,9 @@ Architecture overview
 ```bash
 pip install channels channels-redis daphne gunicorn uvicorn
 Service 1 — Gunicorn (HTTP API)
+# local
+uvicorn ANGKORTRANS.asgi:application --host 0.0.0.0 --port 52467
+
 gunicorn ANGKORTRANS.asgi:application \
   -k uvicorn.workers.UvicornWorker \
   --bind 0.0.0.0:$PORT
@@ -167,6 +170,8 @@ gunicorn ANGKORTRANS.asgi:application \
 
 # In the same command but must be different port on Remder
 gunicorn ANGKORTRANS.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+gunicorn ANGKORTRANS.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:52467
+
 
 You should include migrations + static files:
 pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
