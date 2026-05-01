@@ -23,14 +23,14 @@ def send_user_notification(user, payload):
       Href
     }
     """
-
+    print("send_user_notification: ======> ", user, payload)
     # Save DB history
     row = Notification.objects.create(
         User=user,
         Type=payload["Type"],
         Message=payload["Message"],
         Href=payload.get("Href"),
-        Read=False
+        IsRead=False
     )
 
     # Push realtime
@@ -46,7 +46,7 @@ def send_user_notification(user, payload):
                 "Type": row.Type,
                 "Message": row.Message,
                 "Href": row.Href,
-                "Read": row.Read,
+                "IsRead": row.IsRead,
                 "CreatedAt": row.CreatedAt.isoformat()
             }
         }

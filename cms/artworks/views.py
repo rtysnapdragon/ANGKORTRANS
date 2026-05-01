@@ -93,7 +93,48 @@ def get_artwork(request):
         })
     return Response({'status':'success', 'data':data})
 
-class LikeArtworkView11(APIView):
+@api_view(['POST'])
+def get_artwork_detail(request):
+    if request.method == 'POST':
+        artwork = Artwork.objects.get(Id=request.POST['Id'])
+
+    data = {
+        'Id': artwork.Id,
+        'Title': artwork.Title,
+        'Slug': artwork.Slug,
+        'Description': artwork.Description,
+        'Image': artwork.Image.url,
+        'Artist': artwork.Artist.username,
+        'Likes': artwork.Likes,
+        'Views': artwork.Views,
+        'Saves': artwork.Saves,
+        'IsPublic': artwork.IsPublic,
+        'CreatedAt': artwork.CreatedAt,
+    }
+
+    return Response(data)
+
+@api_view(['POST'])
+def get_artwork_by_slug(request):
+    if request.method == 'POST':
+        artwork = Artwork.objects.get(Slug=request.POST['Slug'])
+
+    data = {
+        'Id': artwork.Id,
+        'Title': artwork.Title,
+        'Slug': artwork.Slug,
+        'Description': artwork.Description,
+        'Image': artwork.Image.url,
+        'Artist': artwork.Artist.username,
+        'Likes': artwork.Likes,
+        'Views': artwork.Views,
+        'Saves': artwork.Saves,
+        'IsPublic': artwork.IsPublic,
+        'CreatedAt': artwork.CreatedAt,
+    }
+
+    return Response(data)
+
     def post(self, request, artwork_id):
         artwork = Artwork.objects.get(id=artwork_id)
 
@@ -123,7 +164,7 @@ class LikeArtworkView11(APIView):
 # @permission_classes([IsAuthenticated])
 def like_artwork(request):
     artwork_id = request.data.get('ArtworkId')
-
+    print("like_artwork: ======> ", request.user)
     if not artwork_id:
         return Response(
             {"error": "ArtworkId required"},
@@ -138,8 +179,10 @@ def like_artwork(request):
     artwork.Likes += 1
     artwork.save(update_fields=['Likes'])
 
+    print("send_user_notification artworks: ======> ", artwork.Artist, request.user)
     send_user_notification(
-        artwork.Artist,
+        # artwork.Artist,
+        request.user,
         {
             "Type": "like",
             "Message": f'{request.user.USERNAME} liked your artwork "{artwork.Title}"',
@@ -162,6 +205,15 @@ def save_artwork(request):
     if artwork.Artist != request.user:
         artwork.Saves += 1
         artwork.save(update_fields=['Saves'])
+        send_user_notification(
+            # artwork.Artist,
+            request.user,
+            {
+                "Type": "save",
+                "Message": f'{request.user.USERNAME} saved your artwork "{artwork.Title}"',
+                "Href": f"/gallery/{artwork.Slug}"
+            }
+        )
 
     return Response({"ok": True})
 
@@ -184,7 +236,7 @@ def share_artwork(request):
             artwork.Artist,
             {
                 "Type": "share",
-                "Message": f'{request.user.username} shared your artwork "{artwork.Title}"',
+                "Message": f'{request.user.USERNAME} shared your artwork "{artwork.Title}"',
                 "Href": f"/gallery/{artwork.Slug}"
             }
         )

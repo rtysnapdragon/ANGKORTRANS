@@ -76,9 +76,11 @@ SIMPLE_JWT = {
 
 AUTH_USER_MODEL = 'accounts.Users' #for django auth system, but we are using custom auth with JWT, so we will handle user authentication manually in views and serializers. This allows us to have more control over the user model and authentication process without being tied to Django's built-in auth system. We can still use Django's password hashing utilities for security, but we won't be using the full AbstractBaseUser or PermissionsMixin features.
 
+
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -188,6 +190,13 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:3001",
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 WSGI_APPLICATION = 'ANGKORTRANS.wsgi.application'
 

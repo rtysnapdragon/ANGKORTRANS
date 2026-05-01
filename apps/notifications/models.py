@@ -7,7 +7,7 @@ class Notification(models.Model):
     Id = models.AutoField(primary_key=True,db_column="ID")
     Type = models.CharField(max_length=50,db_column="TYPE")
     Message = models.TextField(db_column="MESSAGE")
-    Read = models.BooleanField(default=False,db_column="READ")
+    IsRead = models.BooleanField(default=False,db_column="ISREAD")
     Href = models.CharField(max_length=255,null=True,blank=True,db_column="HREF")
 
     User = models.ForeignKey(
