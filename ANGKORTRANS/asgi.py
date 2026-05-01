@@ -28,6 +28,16 @@ application = ProtocolTypeRouter({
     ),
 })
 
+# import notifications.routing
+# application = ProtocolTypeRouter({
+#     "http": get_asgi_application(),
+#     "websocket": AuthMiddlewareStack(
+#         URLRouter(
+#             notifications.routing.websocket_urlpatterns
+#         )
+#     ),
+# })
+
 """
 No token from frontend, use below
 """

@@ -1,0 +1,200 @@
+CREATE TABLE ARTWORKS (
+    ID INTEGER PRIMARY KEY,
+
+    TITLE VARCHAR(255) NOT NULL,
+    SLUG VARCHAR(255) UNIQUE NOT NULL,
+    DESCRIPTION TEXT NOT NULL,
+    IMAGE VARCHAR(255) NOT NULL,
+
+    ARTIST_ID INTEGER NOT NULL,
+
+    LIKES INTEGER DEFAULT 0,
+    VIEWS INTEGER DEFAULT 0,
+    SAVES INTEGER DEFAULT 0,
+
+    IS_PUBLIC BOOLEAN DEFAULT TRUE,
+
+    CREATED_BY INTEGER NOT NULL,
+    UPDATED_BY INTEGER NOT NULL,
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UPDATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_artist
+        FOREIGN KEY (ARTIST_ID)
+        REFERENCES USERS(ID)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_created_by
+        FOREIGN KEY (CREATED_BY)
+        REFERENCES USERS(ID)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_updated_by
+        FOREIGN KEY (UPDATED_BY)
+        REFERENCES USERS(ID)
+        ON DELETE CASCADE
+);
+
+
+CREATE TABLE ARTISTS (
+    ID INT PRIMARY KEY,
+
+    NAME VARCHAR(255) NOT NULL,
+    BIO TEXT NOT NULL,
+    PROFILE_PICTURE VARCHAR(255),
+    WEBSITE VARCHAR(255),
+
+    CREATED_BY INT NOT NULL,
+    UPDATED_BY INT NOT NULL,
+
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UPDATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_artist_created_by
+        FOREIGN KEY (CREATED_BY)
+        REFERENCES USERS(ID)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_artist_updated_by
+        FOREIGN KEY (UPDATED_BY)
+        REFERENCES USERS(ID)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE NOTIFICATIONS (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+
+    TYPE VARCHAR(50) NOT NULL,
+    MESSAGE TEXT NOT NULL,
+    `READ` BOOLEAN NOT NULL DEFAULT 0,
+    HREF VARCHAR(255) NULL,
+
+    USER_ID INT NOT NULL,
+
+    CREATED_BY INT NULL,
+    UPDATED_BY INT NULL,
+
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UPDATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    IS_SENT BOOLEAN NOT NULL DEFAULT 0,
+
+    CONSTRAINT fk_notifications_user
+        FOREIGN KEY (USER_ID)
+        REFERENCES USERS(ID)
+        ON DELETE CASCADE
+);
+
+CREATE INDEX idx_notifications_user ON NOTIFICATIONS(USER_ID);
+CREATE INDEX idx_notifications_read ON NOTIFICATIONS(`READ`);
+
+
+INSERT INTO ARTWORKS 
+(ID, TITLE, SLUG, DESCRIPTION, IMAGE, ARTIST_ID, CREATED_BY, UPDATED_BY, LIKES, VIEWS, SAVES, IS_PUBLIC, CREATED_AT, UPDATED_AT)
+VALUES
+
+(1,
+ 'Angkor Wat Sunrise',
+ 'angkor-wat-sunrise',
+ 'A breathtaking digital painting of sunrise over Angkor Wat, inspired by early morning visits in Siem Reap.',
+ 'artworks/angkor_wat_sunrise.jpg',
+ 1, 4, 4,
+ 120, 980, 45,
+ TRUE,
+ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+),
+
+(2,
+ 'Apsara Dance Grace',
+ 'apsara-dance-grace',
+ 'Traditional Khmer Apsara dancer illustrated with intricate costume details and graceful pose.',
+ 'artworks/apsara_dance.jpg',
+ 2, 4, 4,
+ 200, 1500, 80,
+ TRUE,
+ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+),
+
+(3,
+ 'Phnom Penh Riverside Night',
+ 'phnom-penh-riverside-night',
+ 'Cityscape artwork showing the lively riverside of Phnom Penh at night with reflections on Tonle Sap river.',
+ 'artworks/phnom_penh_night.jpg',
+ 3, 4, 4,
+ 95, 700, 30,
+ TRUE,
+ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+),
+
+(4,
+ 'Bayon Temple Faces',
+ 'bayon-temple-faces',
+ 'Stone faces of Bayon temple reimagined in surreal art style with warm sunset tones.',
+ 'artworks/bayon_faces.jpg',
+ 3, 4, 4,
+ 180, 1300, 60,
+ TRUE,
+ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+),
+
+(5,
+ 'Khmer Street Food',
+ 'khmer-street-food',
+ 'Colorful illustration of Cambodian street food culture including Nom Banh Chok and grilled skewers.',
+ 'artworks/khmer_food.jpg',
+ 2, 4, 4,
+ 75, 500, 20,
+ TRUE,
+ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+);
+
+
+
+INSERT INTO ARTISTS
+(ID, NAME, BIO, PROFILE_PICTURE, WEBSITE, CREATED_BY, UPDATED_BY, CREATED_AT, UPDATED_AT)
+VALUES
+
+(1,
+ 'Vann Nath',
+ 'Renowned Cambodian painter and survivor of Tuol Sleng, known for documenting Khmer Rouge atrocities through art.',
+ 'artists/profile/vann_nath.jpg',
+ 'https://example.com/vann-nath',
+ 4, 4,
+ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+),
+
+(2,
+ 'Sopheap Pich',
+ 'Contemporary Cambodian artist famous for sculptures using bamboo and rattan, exhibited internationally.',
+ 'artists/profile/sopheap_pich.jpg',
+ 'https://example.com/sopheap-pich',
+ 4, 4,
+ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+),
+
+(3,
+ 'Leang Seckon',
+ 'Modern Cambodian artist blending traditional mythology with contemporary themes.',
+ 'artists/profile/leang_seckon.jpg',
+ 'https://example.com/leang-seckon',
+ 4, 4,
+ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+),
+
+(4,
+ 'Svay Sareth',
+ 'Conceptual artist known for performance and installations reflecting Cambodian history and identity.',
+ 'artists/profile/svay_sareth.jpg',
+ 'https://example.com/svay-sareth',
+ 4, 4,
+ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+),
+
+(5,
+ 'Phanith Lim',
+ 'Young Cambodian digital artist focusing on urban life in Phnom Penh.',
+ 'artists/profile/phanith_lim.jpg',
+ 'https://example.com/phanith-lim',
+ 4, 4,
+ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+);

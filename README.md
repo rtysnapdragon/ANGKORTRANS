@@ -67,6 +67,21 @@ pip install -r requirements.txt
 pip install gunicorn
 pip install redis celery
 
+# Run websocket
+``` bash
+daphne ANGKORTRANS.asgi:application --port 8001 --bind [IP_ADDRESS]
+daphne -p 52467 ANGKORTRANS.asgi:application # custom port only
+daphne ANGKORTRANS.asgi:application # default port 8000
+``` 
+
+``` bash
+# Run with address and port:
+daphne -b [IP_ADDRESS] -p 9000 ANGKORTRANS.asgi:application
+```
+
+# Run api server
+python manage.py runserver [IP_ADDRESS]
+
 
 ## Install packages to venv or environment
 ``` bash
@@ -76,6 +91,86 @@ python -m pip install Pillow
 
 if have already please install:
 pip install Pillow
+```
+
+## Render django
+```bash
+#Build Command:
+pip install -r requirements.txt && python manage.py migrate
+
+#Start Command:
+gunicorn ANGKORTRANS.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+daphne ANGKORTRANS.asgi:application --port $PORT --bind [IP_ADDRESS]
+
+🧠 Honest takeaway
+Gunicorn = scales requests
+Daphne = scales connection
+
+# Why Gunicorn is better for Render
+Because Render is a web hosting platform that runs many short-lived processes. Gunicorn is designed for this.
+🧠 The real difference
+🔵 Gunicorn (WSGI / ASGI with Uvicorn workers)
+
+Best for:
+
+normal APIs (REST)
+CRUD operations
+typical Django apps
+
+👉 Handles many short-lived requests very efficiently
+
+🟣 Daphne (ASGI, built for Channels)
+
+Best for:
+
+WebSockets
+real-time features (chat, notifications, live updates)
+
+👉 Handles long-lived connections
+
+
+Correct architecture
+Service 1: Gunicorn → HTTP (API)
+Service 2: Daphne → WebSockets
+Service 3: Redis → channel layer
+
+Architecture overview
+        (Nuxt frontend)
+               |
+        -----------------
+        |               |
+   Gunicorn        Daphne
+   (HTTP API)     (WebSocket)
+        |               |
+        ------- Redis -------
+
+
+=== if need 3 services different 
+```bash
+pip install channels channels-redis daphne gunicorn uvicorn
+Service 1 — Gunicorn (HTTP API)
+gunicorn ANGKORTRANS.asgi:application \
+  -k uvicorn.workers.UvicornWorker \
+  --bind 0.0.0.0:$PORT
+
+Service 2 — Daphne (WebSocket)
+# Start WebSocket with Daphne
+daphne -b 0.0.0.0 -p $PORT ANGKORTRANS.asgi:application
+# daphne ANGKORTRANS.asgi:application --port $PORT
+
+# Start API with Gunicorn
+gunicorn ANGKORTRANS.asgi:application --bind [IP_ADDRESS]:$PORT -k uvicorn.workers.UvicornWorker
+gunicorn ANGKORTRANS.asgi:application \
+  -k uvicorn.workers.UvicornWorker \
+  --bind 0.0.0.0:$PORT
+
+# Connect to Redis from both services
+# In the same command but must be different port
+gunicorn ANGKORTRANS.asgi:application \
+  -k uvicorn.workers.UvicornWorker \
+  --bind 0.0.0.0:8000 &
+
+daphne -b 0.0.0.0 -p $PORT ANGKORTRANS.asgi:application
 ```
 
 ## Issue with git push with security rejection

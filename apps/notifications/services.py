@@ -37,11 +37,12 @@ def send_user_notification(user, payload):
     channel_layer = get_channel_layer()
 
     async_to_sync(channel_layer.group_send)(
-        f"user_{user.id}",
+        f"user_{user.ID}",
         {
-            "type": "notify",
+            # "type": "notify",
+            "type": "send_notification",
             "data": {
-                "Id": row.id,
+                "Id": row.Id,
                 "Type": row.Type,
                 "Message": row.Message,
                 "Href": row.Href,

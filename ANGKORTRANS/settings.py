@@ -61,11 +61,19 @@ if DEBUG:
 DEBUG = True
 
 ALLOWED_HOSTS = []
-SIMPLE_JWT = { #This makes SimpleJWT use: (user.ID) instead of:(user.id)
-    'USER_ID_FIELD': 'ID',
-    # 'USER_ID_FIELD': 'ID',
-    'USER_ID_CLAIM': 'user_id',
+# SIMPLE_JWT = { #This makes SimpleJWT use: (user.ID) instead of:(user.id)
+#     'USER_ID_FIELD': 'ID',
+#     # 'USER_ID_FIELD': 'ID',
+#     'USER_ID_CLAIM': 'user_id',
+# }
+
+SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "USER_ID_FIELD": "ID",
+    "USER_ID_CLAIM": "user_id",
+    "CHECK_USER_IS_ACTIVE": False,  # ⚠️ disable check
 }
+
 AUTH_USER_MODEL = 'accounts.Users' #for django auth system, but we are using custom auth with JWT, so we will handle user authentication manually in views and serializers. This allows us to have more control over the user model and authentication process without being tied to Django's built-in auth system. We can still use Django's password hashing utilities for security, but we won't be using the full AbstractBaseUser or PermissionsMixin features.
 
 # Application definition
@@ -116,12 +124,10 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-    # 'DEFAULT_PERMISSION_CLASSES': [
-    #     "rest_framework.permissions.AllowAny"
-    # ],
-    # 'DEFAULT_PERMISSION_CLASSES': [
-    #     "rest_framework.permissions.IsAuthenticated"
-    # ]
+    'DEFAULT_PERMISSION_CLASSES': [
+        "rest_framework.permissions.AllowAny",
+        # "rest_framework.permissions.IsAuthenticated"
+    ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
@@ -291,11 +297,12 @@ else:
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
             "CONFIG": {
-                "hosts": [("127.0.0.1", 6379)],
+                # "hosts": [("127.0.0.1", 6379)],
+                "hosts": ["redis://:<password>@<host>:<port>/0"],
             },
         }
     }
-    
+
 ## If Redis is only used for cache or queue: Temporarily disable Redis (if you just want Django to run)
 # CACHES = {
 #     "default": {

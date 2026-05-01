@@ -11,6 +11,7 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
         try:
+            # self.group_name = "notifications"
             query = parse_qs(self.scope["query_string"].decode())
             token = query.get("token", [None])[0]
 
@@ -53,6 +54,7 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
         print("WS RECEIVE:", text_data)
 
     async def send_notification(self, event):
+        await self.send(text_data=json.dumps(event["data"]))
         await self.send_json(event["data"])
 
     @database_sync_to_async
