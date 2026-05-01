@@ -58,7 +58,7 @@ if DEBUG:
 # SECURITY WARNING: keep the secret key used in production secret!
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+
 
 ALLOWED_HOSTS = []
 # SIMPLE_JWT = { #This makes SimpleJWT use: (user.ID) instead of:(user.id)
@@ -282,9 +282,6 @@ GOOGLE_AI_API_KEY = env('GOOGLE_AI_API_KEY')
 DOCUMENTS_DIR = BASE_DIR / 'documents'
 
 ASGI_APPLICATION = 'ANGKORTRANS.asgi.application'
-
-
-DEBUG = True
 
 if DEBUG:
     CHANNEL_LAYERS = {
