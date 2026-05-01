@@ -164,8 +164,14 @@ gunicorn ANGKORTRANS.asgi:application \
   -k uvicorn.workers.UvicornWorker \
   --bind 0.0.0.0:$PORT
 
+
+# In the same command but must be different port on Remder
+gunicorn ANGKORTRANS.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+
+You should include migrations + static files:
+pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
+
 # Connect to Redis from both services
-# In the same command but must be different port
 gunicorn ANGKORTRANS.asgi:application \
   -k uvicorn.workers.UvicornWorker \
   --bind 0.0.0.0:8000 &
