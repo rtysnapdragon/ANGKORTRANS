@@ -9,6 +9,7 @@ class Collection(models.Model):
     Description = models.TextField(db_column="DESCRIPTION")
     Image = models.ImageField(upload_to='collections/',db_column="IMAGE")
     Artist = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='collection_artist_id',db_column="ARTIST_ID")
+    Artwork = models.ManyToManyField(Artwork,related_name='collection_artwork_id',db_column="ARTWORK_ID")
 
     Likes = models.IntegerField(default=0,db_column="LIKES")
     Views = models.IntegerField(default=0,db_column="VIEWS")
@@ -53,8 +54,8 @@ class Save(models.Model):
 class Share(models.Model):
     Id = models.IntegerField(auto_created=True,primary_key=True,db_column="ID")
     User = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='share_user_id',db_column="USER_ID")
-    Artwork = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='share_artwork_id',db_column="ARTWORK_ID")
-    Collection = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='share_collection_id',db_column="COLLECTION_ID")
+    Artwork = models.ForeignKey(Artwork,on_delete=models.CASCADE,related_name='share_artwork_id',db_column="ARTWORK_ID")
+    Collection = models.ForeignKey(Collection,on_delete=models.CASCADE,related_name='share_collection_id',db_column="COLLECTION_ID")
     CreatedBy = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='share_created_by',db_column="CREATED_BY")
     UpdatedBy = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='share_updated_by',db_column="UPDATED_BY")
     CreatedAt = models.DateTimeField(auto_now_add=True,db_column="CREATED_AT")
@@ -73,8 +74,8 @@ class Share(models.Model):
 class View(models.Model):
     Id = models.IntegerField(auto_created=True,primary_key=True,db_column="ID")
     User = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='view_user_id',db_column="USER_ID")
-    Artwork = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='view_artwork_id',db_column="ARTWORK_ID")
-    Collection = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='view_collection_id',db_column="COLLECTION_ID")
+    Artwork = models.ForeignKey(Artwork,on_delete=models.CASCADE,related_name='view_artwork_id',db_column="ARTWORK_ID")
+    Collection = models.ForeignKey(Collection,on_delete=models.CASCADE,related_name='view_collection_id',db_column="COLLECTION_ID")
     CreatedBy = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='view_created_by',db_column="CREATED_BY")
     UpdatedBy = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='view_updated_by',db_column="UPDATED_BY")
     CreatedAt = models.DateTimeField(auto_now_add=True,db_column="CREATED_AT")

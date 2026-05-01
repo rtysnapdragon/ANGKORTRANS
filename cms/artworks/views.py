@@ -81,38 +81,50 @@ def get_artwork(request):
             'Slug': artwork.Slug,
             'Description': artwork.Description,
             'Image': artwork.Image.url,
-            'Artist': artwork.Artist.username,
+            'Artist': artwork.Artist.USERNAME,
             'Likes': artwork.Likes,
             'Views': artwork.Views,
             'Saves': artwork.Saves,
             'IsPublic': artwork.IsPublic,
             'CreatedAt': artwork.CreatedAt,
             'UpdatedAt': artwork.UpdatedAt,
-            'CreatedBy': artwork.CreatedBy.username,
-            'UpdatedBy': artwork.UpdatedBy.username,
+            'CreatedBy': artwork.CreatedBy.USERNAME,
+            'UpdatedBy': artwork.UpdatedBy.USERNAME,
         })
     return Response({'status':'success', 'data':data})
 
 @api_view(['POST'])
 def get_artwork_detail(request):
-    if request.method == 'POST':
-        artwork = Artwork.objects.get(Id=request.POST['Id'])
+    artwork_id = request.data.get('Id')
+    slug = request.data.get('Slug')
 
-    data = {
+    artwork = None
+
+    if artwork_id:
+        artwork = get_object_or_404(Artwork, Id=artwork_id)
+
+    elif slug:
+        artwork = get_object_or_404(Artwork, Slug=slug)
+
+    else:
+        return Response(
+            {"error": "Id or Slug required"},
+            status=400
+        )
+
+    return Response({
         'Id': artwork.Id,
         'Title': artwork.Title,
         'Slug': artwork.Slug,
         'Description': artwork.Description,
         'Image': artwork.Image.url,
-        'Artist': artwork.Artist.username,
+        'Artist': artwork.Artist.USERNAME,
         'Likes': artwork.Likes,
         'Views': artwork.Views,
         'Saves': artwork.Saves,
         'IsPublic': artwork.IsPublic,
         'CreatedAt': artwork.CreatedAt,
-    }
-
-    return Response(data)
+    })
 
 @api_view(['POST'])
 def get_artwork_by_slug(request):
@@ -125,7 +137,7 @@ def get_artwork_by_slug(request):
         'Slug': artwork.Slug,
         'Description': artwork.Description,
         'Image': artwork.Image.url,
-        'Artist': artwork.Artist.username,
+        'Artist': artwork.Artist.USERNAME,
         'Likes': artwork.Likes,
         'Views': artwork.Views,
         'Saves': artwork.Saves,
@@ -151,7 +163,7 @@ def get_artwork_by_slug(request):
                 "type": "notify",
                 "data": {
                     "Type": "like",
-                    "Message": f"{request.user.username} liked your artwork",
+                    "Message": f"{request.user.USERNAME} liked your artwork",
                     "Href": f"/gallery/{artwork.Slug}"
                 }
             }
@@ -191,6 +203,7 @@ def like_artwork(request):
     )
 
     return Response({"ok": True})
+
 
 @api_view(['POST'])
 # @permission_classes([IsAuthenticated])
