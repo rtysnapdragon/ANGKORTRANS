@@ -67,11 +67,18 @@ pip install -r requirements.txt
 pip install gunicorn
 pip install redis celery
 
-# Run websocket
+# Run websocket Local
 ``` bash
+## Run API server Local with gunicorn
+gunicorn ANGKORTRANS.asgi:application --port 8001 --bind [IP_ADDRESS]
 daphne ANGKORTRANS.asgi:application --port 8001 --bind [IP_ADDRESS]
 daphne -p 52467 ANGKORTRANS.asgi:application # custom port only
 daphne ANGKORTRANS.asgi:application # default port 8000
+
+bash
+# Run WebSocket Local with gunicorn
+gunicorn ANGKORTRANS.asgi:application
+# gunicorn ANGKORTRANS.asgi:application --port 52467 --bind [IP_ADDRESS]
 ``` 
 
 ``` bash
