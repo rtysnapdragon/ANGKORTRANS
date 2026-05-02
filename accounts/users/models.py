@@ -73,7 +73,7 @@ class Users(models.Model): # Can cause error due to circular import when User mo
         return check_password(raw_password, self.PASSWORD_HASH)
 
 class UserProfile(models.Model):
-    USER_ID = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True,name="user_profile_user_id", db_column='USER_ID')
+    USER_ID = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True,related_name="user_profile_user_id", db_column='USER_ID')
     NAME = models.CharField(max_length=100, db_column='NAME')
     NAME_ENGLISH = models.CharField(max_length=100, null=True, blank=True, db_column='NAME_ENGLISH')
     GENDER = models.CharField(max_length=20, null=True, blank=True, db_column='GENDER')

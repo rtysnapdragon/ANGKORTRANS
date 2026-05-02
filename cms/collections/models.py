@@ -47,7 +47,6 @@ class Save(models.Model):
         verbose_name = "Save"
         verbose_name_plural = "Saves"
 
-        
     def __str__(self):
         return str(self.id)
 

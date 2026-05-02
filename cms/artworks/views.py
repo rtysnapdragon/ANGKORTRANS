@@ -11,6 +11,7 @@ from cms.utils.handle import apply_request_filters
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from cms.artworks.models import Artwork
 
 
 from .serializers import ArtworkSerializer
@@ -95,15 +96,15 @@ def get_artwork(request):
 
 @api_view(['POST'])
 def get_artwork_detail(request):
-    artwork_id = request.data.get('Id')
+    # artwork_id = request.data.get('Id')
     slug = request.data.get('Slug')
 
     artwork = None
 
-    if artwork_id:
-        artwork = get_object_or_404(Artwork, Id=artwork_id)
+    # if artwork_id:
+    #     artwork = get_object_or_404(Artwork, Id=artwork_id)
 
-    elif slug:
+    if slug:
         artwork = get_object_or_404(Artwork, Slug=slug)
 
     else:
@@ -112,19 +113,53 @@ def get_artwork_detail(request):
             status=400
         )
 
+    artist = artwork.Artist
+    profile = getattr(artist, 'user_profile_user_id', None)  # safe access
+    print("profile: ======> ", profile)
     return Response({
         'Id': artwork.Id,
         'Title': artwork.Title,
         'Slug': artwork.Slug,
         'Description': artwork.Description,
-        'Image': artwork.Image.url,
-        'Artist': artwork.Artist.USERNAME,
+        'Image': artwork.Image.url if artwork.Image else None,
+
+        # Artist info
+        'Artist': artist.USERNAME,
+        'ArtistEmail': artist.EMAIL,
+
+        # 👇 UserProfile fields
+        'ArtistName': profile.NAME if profile else None,
+        'ArtistNameEnglish': profile.NAME_ENGLISH if profile else None,
+        'Gender': profile.GENDER if profile else None,
+        'ProfilePicture': profile.PROFILE_PICTURE_URL if profile else None,
+        'Bio': profile.BIO if profile else None,
+
+        # Artwork stats
         'Likes': artwork.Likes,
         'Views': artwork.Views,
         'Saves': artwork.Saves,
         'IsPublic': artwork.IsPublic,
+
         'CreatedAt': artwork.CreatedAt,
+        'CreatedBy': artwork.CreatedBy.USERNAME,
+        'UpdatedBy': artwork.UpdatedBy.USERNAME,
     })
+    # return Response({
+    #     'Id': artwork.Id,
+    #     'Title': artwork.Title,
+    #     'Slug': artwork.Slug,
+    #     'Description': artwork.Description,
+    #     'Image': artwork.Image.url,
+    #     'Artists': artwork.Artist.USERNAME,
+    #     'Artist': artwork.Artist.user_profile_user_id,
+    #     'Likes': artwork.Likes,
+    #     'Views': artwork.Views,
+    #     'Saves': artwork.Saves,
+    #     'IsPublic': artwork.IsPublic,
+    #     'CreatedAt': artwork.CreatedAt,
+    #     'CreatedBy': artwork.CreatedBy.USERNAME,
+    #     'UpdatedBy': artwork.UpdatedBy.USERNAME,
+    # })
 
 @api_view(['POST'])
 def get_artwork_by_slug(request):
@@ -143,6 +178,8 @@ def get_artwork_by_slug(request):
         'Saves': artwork.Saves,
         'IsPublic': artwork.IsPublic,
         'CreatedAt': artwork.CreatedAt,
+        'CreatedBy': artwork.CreatedBy.USERNAME,
+        'UpdatedBy': artwork.UpdatedBy.USERNAME,
     }
 
     return Response(data)

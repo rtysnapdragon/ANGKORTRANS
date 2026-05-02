@@ -13,7 +13,8 @@ def save(request):
         artwork = Artwork.objects.get(Id=request.data["ArtworkId"])
         save,created = Save.objects.get_or_create(
             User=request.user,
-            Artwork=artwork
+            Artwork=artwork,
+            Collection=None
         )
 
         if created:
@@ -36,7 +37,8 @@ def like(request):
         artwork = Artwork.objects.get(Id=request.POST["ArtworkId"])
         like,created = Like.objects.get_or_create(
             User=request.user,
-            Artwork=artwork
+            Artwork=artwork,
+            Collection=None
         )
 
         if created:
@@ -81,13 +83,14 @@ def share(request):
 def view(request):
     if request.method == 'POST':
         artwork = Artwork.objects.get(Id=request.data["ArtworkId"])
-        view = View.objects.create(
-            User=request.user,
-            Artwork=artwork
-        )
+        # view = View.objects.create(
+        #     User=request.user,
+        #     Artwork=artwork,
+        #     Collection=None
+        # )
 
-        artwork.Views += 1
-        artwork.save()
+        # artwork.Views += 1
+        # artwork.save()
         
         send_user_notification(
             # artwork.Artist,
@@ -99,7 +102,6 @@ def view(request):
             }
         )
 
-        return Response({"ok": True})
         return Response({"ok": True})
 
 
