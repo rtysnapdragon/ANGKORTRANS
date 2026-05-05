@@ -16,7 +16,7 @@ class RefreshTokenResponseSerializer(serializers.Serializer):
     RefreshToken = serializers.CharField()
     
 class LoginSerializer(serializers.Serializer):
-    UsernameOrEmail = serializers.CharField()
+    Identifier = serializers.CharField()
     Password = serializers.CharField(write_only=True)
 
 class RefreshTokenSerializer(serializers.Serializer):
@@ -54,5 +54,5 @@ class ForgotOrResetPasswordSerializer(serializers.Serializer):
     
     
 class UserLoginSerializer(serializers.Serializer):
-    UsernameOrEmail = serializers.CharField()
+    Identifier = serializers.CharField()
     Password = serializers.CharField(write_only=True)

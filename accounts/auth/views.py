@@ -321,7 +321,7 @@ def auth_login(request):
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    username_or_email = serializer.validated_data['UsernameOrEmail']
+    username_or_email = serializer.validated_data['Identifier']
     password = serializer.validated_data['Password']
     print("Login username_or_email: ", username_or_email)
     print("Login password: ", password)
@@ -382,7 +382,7 @@ def login(request):
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    username_or_email = serializer.validated_data['UsernameOrEmail']
+    username_or_email = serializer.validated_data['Identifier']
     password = serializer.validated_data['Password']
 
     user = None
@@ -438,7 +438,7 @@ def auth_login11(request):
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    username_or_email = serializer.validated_data['UsernameOrEmail']
+    username_or_email = serializer.validated_data['Identifier']
     password = serializer.validated_data['Password']
 
     try:
@@ -680,7 +680,7 @@ def reset_password(request):
 @api_view(['POST'])
 def admin_reset_password(request):
     """Admin resets user password (requires admin privileges)"""
-    username_or_email = request.data.get('UsernameOrEmail')
+    username_or_email = request.data.get('Identifier')
     new_password = request.data.get('NewPassword')
 
     if not username_or_email or not new_password:
@@ -827,7 +827,7 @@ def oauth_token(request):
     body = request.body.decode('utf-8')
     parsed = parse_qs(body)
 
-    username_or_email = parsed.get('UsernameOrEmail', [None])[0]
+    username_or_email = parsed.get('Identifier', [None])[0]
     password = parsed.get('Password', [None])[0]
 
     if not username_or_email or not password:
