@@ -1,0 +1,20 @@
+﻿#,Table,Type,Purpose
+1,`ADDRESS`,Reference,Global address registry
+2,`CARRIER`,Reference,Shipping carriers
+3,`USER`,Reference,System users & roles
+4,`CATEGORY`,Master,Product taxonomy (self-referencing)
+5,`SUPPLIER`,Master,Vendor master data
+6,`PRODUCT`,Master,SKU catalog
+7,`CUSTOMER`,Master,Customer master data
+8,`WAREHOUSE`,Master,Storage facilities
+9,`LOCATION`,Master,Bin/shelf/aisle locations
+10,`INVENTORY`,Transaction,Real-time stock balances
+11,`SALES_ORDER`,Transaction,Customer order headers
+12,`SALES_ORDER_LINE`,Transaction,Order line items
+13,`PURCHASE_ORDER`,Transaction,Supplier PO headers
+14,`PURCHASE_ORDER_LINE`,Transaction,PO line items
+15,`SHIPMENT`,Logistics,Outbound shipments
+16,`SHIPMENT_LINE`,Logistics,Shipment items
+17,`GOODS_RECEIPT`,Logistics,Inbound receipts
+18,`GOODS_RECEIPT_LINE`,Logistics,Receipt line items
+19,`STOCK_MOVEMENT`,Audit,All inventory changes log

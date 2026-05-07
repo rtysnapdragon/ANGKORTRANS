@@ -1,0 +1,237 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AngkorTrans API - Documentation</title>
+
+    <link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Press+Start+2P&display=swap');
+
+        :root {
+            --bg: #0a0a0a;
+            --accent: #ff3366;
+            --gold: #ffcc00;
+            --stone: #1f1f1f;
+            --text-primary: #f0f0f0;
+            --text-secondary: #cccccc;
+            --text-light: #aaaaaa;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: 'Press Start 2P', system-ui;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Glowing Header */
+        .custom-header {
+            background: linear-gradient(180deg, #1a0f1f 0%, #0a0a0a 100%);
+            padding: 45px 20px 30px;
+            text-align: center;
+            border-bottom: 5px solid var(--accent);
+            box-shadow: 0 0 40px rgba(255, 51, 102, 0.5);
+        }
+
+        .logo {
+            font-family: 'Creepster', cursive;
+            font-size: 4.6rem;
+            color: var(--gold);
+            text-shadow:
+                0 0 15px #ffcc00,
+                0 0 40px #ff3366,
+                6px 6px 0 #000;
+            letter-spacing: 12px;
+            margin-bottom: 12px;
+        }
+
+        .tagline {
+            color: var(--accent);
+            font-size: 1.4rem;
+            letter-spacing: 7px;
+            text-shadow: 0 0 20px var(--accent);
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            background: #111;
+            padding: 20px 0;
+            text-align: center;
+            border-bottom: 3px solid var(--accent);
+        }
+
+        .nav-bar a {
+            color: var(--gold);
+            text-decoration: none;
+            font-size: 1.1rem;
+            margin: 0 28px;
+            padding: 12px 26px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .nav-bar a:hover,
+        .nav-bar a.active {
+            color: #fff;
+            border-color: var(--accent);
+            background: rgba(255, 51, 102, 0.2);
+            box-shadow: 0 0 25px rgba(255, 51, 102, 0.6);
+        }
+
+        /* Swagger UI - Improved Readability */
+        .swagger-ui {
+            background: var(--bg) !important;
+        }
+
+        .swagger-ui .topbar {
+            display: none;
+        }
+
+        .swagger-ui .info h1 {
+            color: var(--gold) !important;
+            font-size: 2.9rem !important;
+            text-shadow: 0 0 25px var(--accent);
+        }
+
+        .swagger-ui .opblock {
+            background: var(--stone) !important;
+            border: 2px solid #555 !important;
+            margin-bottom: 25px;
+        }
+
+        .swagger-ui .opblock .opblock-summary {
+            background: #252525 !important;
+            padding: 20px !important;
+        }
+
+        .swagger-ui .opblock .opblock-summary-method {
+            background: var(--accent) !important;
+            color: #000 !important;
+            font-weight: bold;
+            font-size: 1.15rem;
+            padding: 10px 22px !important;
+        }
+
+        /* Much clearer text */
+        .swagger-ui p,
+        .swagger-ui li,
+        .swagger-ui .opblock-description-wrapper p,
+        .swagger-ui .parameter__type,
+        .swagger-ui .parameter__name,
+        .swagger-ui .model-title,
+        .swagger-ui table {
+            color: var(--text-primary) !important;
+            font-size: 1rem;
+            line-height: 1.75;
+        }
+
+        .swagger-ui .parameter__name {
+            color: var(--gold) !important;
+            font-weight: bold;
+        }
+
+        .swagger-ui .opblock-description-wrapper p {
+            color: var(--text-secondary) !important;
+        }
+
+        /* Better input fields & buttons */
+        .swagger-ui input[type="text"],
+        .swagger-ui textarea {
+            background: #222 !important;
+            color: #fff !important;
+            border: 2px solid #666 !important;
+        }
+
+        .swagger-ui .btn {
+            background: transparent !important;
+            border: 2px solid var(--accent) !important;
+            color: var(--accent) !important;
+            font-family: 'Press Start 2P' !important;
+            padding: 12px 24px !important;
+            font-size: 1.05rem;
+        }
+
+        .swagger-ui .btn:hover {
+            background: var(--accent) !important;
+            color: #000 !important;
+            box-shadow: 0 0 30px var(--accent);
+        }
+
+        .swagger-ui .execute {
+            background: var(--accent) !important;
+            color: #000 !important;
+            border: none !important;
+            font-weight: bold;
+        }
+
+        .swagger-ui section.models {
+            background: var(--stone) !important;
+        }
+
+        .swagger-ui .model-box {
+            background: #1a1a1a !important;
+            border: 1px solid #666;
+        }
+
+        /* Responses area */
+        .swagger-ui .responses-inner {
+            background: #1a1a1a !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <div class="custom-header">
+        <div class="logo">ANGKORTRANS</div>
+        <div class="tagline">ANCIENT POWERED TRANSLATION API</div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-bar">
+        <a href="{% url 'swagger-ui' %}" class="active">SWAGGER UI</a>
+        <a href="{% url 'redoc' %}">REDOC VIEW</a>
+        <a href="{% url 'schema' %}">RAW SCHEMA (JSON)</a>
+        <a href="/">← BACK TO HOMEPAGE</a>
+    </div>
+
+    <div id="swagger-ui"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-bundle.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-standalone-preset.min.js"></script>
+
+    <script>
+        window.onload = function () {
+            const ui = SwaggerUIBundle({
+                url: "{% url 'schema' %}",
+                dom_id: '#swagger-ui',
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                layout: "StandaloneLayout",
+                deepLinking: true,
+                persistAuthorization: true,
+                displayOperationId: true,
+                docExpansion: "list",
+                filter: true,
+                tryItOutEnabled: true,
+                defaultModelsExpandDepth: 1,
+            });
+            window.ui = ui;
+        };
+    </script>
+</body>
+
+</html>

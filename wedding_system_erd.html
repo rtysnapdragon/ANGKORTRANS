@@ -1,0 +1,248 @@
+
+<style>
+#erd-wrap { padding: 12px 0; }
+#erd-wrap svg { max-width: 100%; }
+.nf-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; margin-right: 4px; }
+.b1 { background: var(--color-background-info); color: var(--color-text-info); }
+.b2 { background: var(--color-background-success); color: var(--color-text-success); }
+.b3 { background: var(--color-background-warning); color: var(--color-text-warning); }
+.legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; font-size: 12px; color: var(--color-text-secondary); }
+</style>
+<div id="erd-wrap">
+  <div class="legend">
+    <span class="nf-badge b1">1NF</span> Atomic values, no repeating groups
+    <span class="nf-badge b2">2NF</span> No partial dependencies
+    <span class="nf-badge b3">3NF</span> No transitive dependencies
+  </div>
+  <div id="erd"></div>
+</div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '12px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+    primaryColor: dark ? '#2a2a28' : '#f4f2eb',
+    primaryBorderColor: dark ? '#5a5a55' : '#b4b2a9',
+  },
+});
+
+const diagram = `erDiagram
+  COUPLE {
+    int couple_id PK
+    int person1_id FK
+    int person2_id FK
+    date engagement_date
+    int venue_id FK
+    int package_id FK
+  }
+  PERSON {
+    int person_id PK
+    varchar first_name
+    varchar last_name
+    varchar email
+    varchar phone
+    date date_of_birth
+    varchar address_line1
+    varchar city
+    varchar state
+    varchar postal_code
+    varchar country
+  }
+  WEDDING_EVENT {
+    int event_id PK
+    int couple_id FK
+    varchar event_name
+    date event_date
+    time start_time
+    time end_time
+    int venue_id FK
+    varchar status
+  }
+  VENUE {
+    int venue_id PK
+    varchar venue_name
+    varchar address_line1
+    varchar city
+    varchar state
+    varchar postal_code
+    int capacity
+    decimal price_per_hour
+    int contact_person_id FK
+  }
+  GUEST {
+    int guest_id PK
+    int person_id FK
+    int event_id FK
+    varchar rsvp_status
+    varchar meal_preference
+    varchar table_number
+    int plus_one_guest_id FK
+  }
+  VENDOR {
+    int vendor_id PK
+    varchar vendor_name
+    int vendor_type_id FK
+    varchar email
+    varchar phone
+    varchar website
+    varchar city
+    varchar state
+  }
+  VENDOR_TYPE {
+    int vendor_type_id PK
+    varchar type_name
+  }
+  EVENT_VENDOR {
+    int event_vendor_id PK
+    int event_id FK
+    int vendor_id FK
+    decimal agreed_price
+    varchar status
+    text notes
+  }
+  WEDDING_PARTY {
+    int party_id PK
+    int event_id FK
+    int person_id FK
+    int role_id FK
+  }
+  PARTY_ROLE {
+    int role_id PK
+    varchar role_name
+    varchar role_category
+  }
+  BUDGET {
+    int budget_id PK
+    int couple_id FK
+    decimal total_budget
+    varchar currency
+  }
+  BUDGET_ITEM {
+    int item_id PK
+    int budget_id FK
+    int category_id FK
+    varchar item_name
+    decimal estimated_cost
+    decimal actual_cost
+    varchar payment_status
+  }
+  BUDGET_CATEGORY {
+    int category_id PK
+    varchar category_name
+  }
+  PAYMENT {
+    int payment_id PK
+    int event_vendor_id FK
+    decimal amount
+    date payment_date
+    varchar payment_method
+    varchar reference_number
+  }
+  SEATING_TABLE {
+    int table_id PK
+    int event_id FK
+    varchar table_name
+    int capacity
+  }
+  TASK {
+    int task_id PK
+    int couple_id FK
+    varchar task_name
+    date due_date
+    int assigned_to FK
+    varchar status
+    int category_id FK
+  }
+  PACKAGE {
+    int package_id PK
+    varchar package_name
+    text description
+    decimal base_price
+  }
+  PACKAGE_ITEM {
+    int pkg_item_id PK
+    int package_id FK
+    varchar item_description
+    int quantity
+  }
+  ACCOMMODATION {
+    int accom_id PK
+    int event_id FK
+    varchar hotel_name
+    varchar city
+    varchar contact_email
+    int rooms_blocked
+    decimal rate_per_night
+  }
+  GUEST_ACCOMMODATION {
+    int ga_id PK
+    int guest_id FK
+    int accom_id FK
+    date check_in
+    date check_out
+    int rooms_reserved
+  }
+  COUPLE ||--|| PERSON : "person1"
+  COUPLE ||--|| PERSON : "person2"
+  COUPLE ||--o{ WEDDING_EVENT : "hosts"
+  COUPLE ||--o{ BUDGET : "plans"
+  COUPLE ||--o{ TASK : "manages"
+  COUPLE }o--o| PACKAGE : "selects"
+  WEDDING_EVENT }o--|| VENUE : "held at"
+  WEDDING_EVENT ||--o{ GUEST : "invites"
+  WEDDING_EVENT ||--o{ EVENT_VENDOR : "contracts"
+  WEDDING_EVENT ||--o{ WEDDING_PARTY : "includes"
+  WEDDING_EVENT ||--o{ SEATING_TABLE : "has"
+  WEDDING_EVENT ||--o{ ACCOMMODATION : "arranges"
+  GUEST }|--|| PERSON : "is"
+  GUEST }o--o| SEATING_TABLE : "seated at"
+  GUEST ||--o{ GUEST_ACCOMMODATION : "books"
+  ACCOMMODATION ||--o{ GUEST_ACCOMMODATION : "provides"
+  VENDOR }|--|| VENDOR_TYPE : "categorized as"
+  EVENT_VENDOR }|--|| VENDOR : "uses"
+  EVENT_VENDOR ||--o{ PAYMENT : "receives"
+  WEDDING_PARTY }|--|| PERSON : "member is"
+  WEDDING_PARTY }|--|| PARTY_ROLE : "plays"
+  PARTY_ROLE ||--o{ TASK : "responsible for"
+  BUDGET ||--o{ BUDGET_ITEM : "contains"
+  BUDGET_ITEM }|--|| BUDGET_CATEGORY : "belongs to"
+  PACKAGE ||--o{ PACKAGE_ITEM : "includes"
+  VENUE }o--|| PERSON : "contact"
+`;
+
+const { svg } = await mermaid.render('erd-main', diagram);
+document.getElementById('erd').innerHTML = svg;
+
+document.querySelectorAll('#erd svg .node').forEach(node => {
+  const firstPath = node.querySelector('path[d]');
+  if (!firstPath) return;
+  const d = firstPath.getAttribute('d');
+  const nums = d.match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '8');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
+
+document.querySelectorAll('#erd svg .row-rect-odd path, #erd svg .row-rect-even path').forEach(p => {
+  p.setAttribute('stroke', 'none');
+});
+</script>
