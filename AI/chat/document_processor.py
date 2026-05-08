@@ -3,7 +3,7 @@ import json
 import re
 from typing import List, Dict, Any
 from django.db import transaction
-from ..models import AI_DOCUMENTS, AI_DOCUMENT_CHUNKS, AI_QUERY_LOGS
+from ..models import AIDocument, AIDocumentChunks, AIQueryLogs
 
 class DocumentProcessor:
     """Handle document processing, chunking, and retrieval"""
@@ -24,13 +24,13 @@ class DocumentProcessor:
         
         return chunks
     
-    def process_document(self, document_data: Dict) -> AI_DOCUMENTS:
+    def process_document(self, document_data: Dict) -> AIDocument:
         """Process and store a document with chunks"""
         with transaction.atomic():
             # Create or update document
             content_hash = hashlib.sha256(document_data['CONTENT'].encode()).hexdigest()
             
-            document, created = AI_DOCUMENTS.objects.update_or_create(
+            document, created = AIDocument.objects.update_or_create(
                 CONTENT_HASH=content_hash,
                 defaults={
                     'TITLE': document_data['TITLE'],
@@ -45,12 +45,12 @@ class DocumentProcessor:
             )
             
             # Delete existing chunks
-            AI_DOCUMENT_CHUNKS.objects.filter(DOCUMENT=document).delete()
+            AIDocumentChunks.objects.filter(DOCUMENT=document).delete()
             
             # Create new chunks
             chunks = self.chunk_text(document.CONTENT)
             for idx, chunk_content in enumerate(chunks):
-                AI_DOCUMENT_CHUNKS.objects.create(
+                AIDocumentChunks.objects.create(
                     DOCUMENT=document,
                     CHUNK_INDEX=idx,
                     CONTENT=chunk_content,
@@ -75,7 +75,7 @@ class DocumentProcessor:
                 q_objects |= Q(CATEGORY__icontains=term)
         
         # Filter by language and active status
-        documents = AI_DOCUMENTS.objects.filter(
+        documents = AIDocument.objects.filter(
             IS_ACTIVE=True,
             LANGUAGE=language
         ).filter(q_objects)
@@ -101,7 +101,7 @@ class DocumentProcessor:
         
         return sorted(results, key=lambda x: x['relevance_score'], reverse=True)
     
-    def _calculate_relevance(self, document: AI_DOCUMENTS, query: str) -> float:
+    def _calculate_relevance(self, document: AIDocument, query: str) -> float:
         """Calculate simple relevance score"""
         query_terms = set(query.lower().split())
         title_terms = set(document.TITLE.lower().split())
@@ -127,7 +127,7 @@ class DocumentProcessor:
             if len(term) > 2:
                 q_objects |= Q(CONTENT__icontains=term)
         
-        chunks = AI_DOCUMENT_CHUNKS.objects.filter(
+        chunks = AIDocumentChunks.objects.filter(
             DOCUMENT__IS_ACTIVE=True,
             DOCUMENT__LANGUAGE=language
         ).filter(q_objects).select_related('DOCUMENT')[:limit]

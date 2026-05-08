@@ -25,8 +25,8 @@ from rest_framework import status
 from django.db import transaction
 from django.utils import timezone
 import uuid
-from .models import CHAT_USERS, CHAT_SESSIONS, CHAT_MESSAGES, AI_DOCUMENTS, CHAT_FEEDBACK
-from .serializers import CHAT_USER_SERIALIZER, CHAT_SESSION_SERIALIZER, CHAT_MESSAGE_SERIALIZER, AI_DOCUMENT_SERIALIZER
+from .models import ChatUser, ChatSession, ChatMessage, AIDocument, ChatFeedback
+from .serializers import ChatUserSerializer, ChatSessionSerializer, ChatMessageSerializer, AiDocumentSerializer
 
 from .services.ai_service import AIChatService
 
@@ -46,7 +46,7 @@ def init_chat(request):
         
         with transaction.atomic():
             # Get or create user
-            user, created = CHAT_USERS.objects.get_or_create(
+            user, created = ChatUser.objects.get_or_create(
                 VISITOR_ID=visitor_id,
                 defaults={
                     'USER_UUID': user_uuid or uuid.uuid4(),
@@ -63,29 +63,29 @@ def init_chat(request):
                 user.save()
             
             # Get or create active session
-            session = CHAT_SESSIONS.objects.filter(
+            session = ChatSession.objects.filter(
                 USER=user,
                 IS_ACTIVE=True
             ).first()
             
             if not session:
-                session = CHAT_SESSIONS.objects.create(
+                session = ChatSession.objects.create(
                     USER=user,
                     SESSION_UUID=uuid.uuid4(),
                     IS_ACTIVE=True
                 )
             
             # Get recent messages
-            recent_messages = CHAT_MESSAGES.objects.filter(
+            recent_messages = ChatMessage.objects.filter(
                 SESSION=session
             ).order_by('-CREATED_AT')[:20]
             
-            messages_serializer = CHAT_MESSAGE_SERIALIZER(recent_messages, many=True)
+            messages_serializer = ChatMessageSerializer(recent_messages, many=True)
             
             return Response({
                 'SUCCESS': True,
-                'USER': CHAT_USER_SERIALIZER(user).data,
-                'SESSION': CHAT_SESSION_SERIALIZER(session).data,
+                'USER': ChatUserSerializer(user).data,
+                'SESSION': ChatSessionSerializer(session).data,
                 'RECENT_MESSAGES': messages_serializer.data,
                 'VISITOR_ID': visitor_id
             }, status=status.HTTP_200_OK)
@@ -113,14 +113,14 @@ def send_chat_message(request):
         
         # Validate session and user
         try:
-            session = CHAT_SESSIONS.objects.get(ID=session_id, IS_ACTIVE=True)
-            user = CHAT_USERS.objects.get(ID=user_id)
-        except CHAT_SESSIONS.DoesNotExist:
+            session = ChatSession.objects.get(ID=session_id, IS_ACTIVE=True)
+            user = ChatUser.objects.get(ID=user_id)
+        except ChatSession.DoesNotExist:
             return Response({
                 'SUCCESS': False,
                 'ERROR': 'Invalid or inactive session'
             }, status=status.HTTP_404_NOT_FOUND)
-        except CHAT_USERS.DoesNotExist:
+        except ChatUser.DoesNotExist:
             return Response({
                 'SUCCESS': False,
                 'ERROR': 'Invalid or inactive user'
@@ -128,7 +128,7 @@ def send_chat_message(request):
         
         # Save user message to database
         try:
-            user_message_obj = CHAT_MESSAGES.objects.create(
+            user_message_obj = ChatMessage.objects.create(
                 SESSION=session,
                 USER=user,
                 ROLE='USER',
@@ -160,7 +160,7 @@ def send_chat_message(request):
         
         if ai_response['success']:
             # Save AI response to database
-            ai_message_obj = CHAT_MESSAGES.objects.create(
+            ai_message_obj = ChatMessage.objects.create(
                 SESSION=session,
                 USER=user,
                 ROLE='ASSISTANT',
@@ -239,13 +239,13 @@ def manage_documents(request):
     """Manage AI knowledge documents"""
     if request.method == 'GET':
         # Get all active documents
-        documents = AI_DOCUMENTS.objects.filter(IS_ACTIVE=True)
+        documents = AIDocument.objects.filter(IS_ACTIVE=True)
         category = request.GET.get('CATEGORY')
         
         if category:
             documents = documents.filter(CATEGORY=category)
         
-        serializer = AI_DOCUMENT_SERIALIZER(documents, many=True)
+        serializer = AIDocumentSerializer(documents, many=True)
         return Response({
             'SUCCESS': True,
             'DOCUMENTS': serializer.data,
@@ -265,8 +265,8 @@ def manage_documents(request):
                 'METADATA': request.data.get('METADATA', {})
             }
             
-            document = AI_DOCUMENTS.objects.create(**document_data)
-            serializer = AI_DOCUMENT_SERIALIZER(document)
+            document = AIDocument.objects.create(**document_data)
+            serializer = AIDocumentSerializer(document)
             
             return Response({
                 'SUCCESS': True,
@@ -283,7 +283,7 @@ def manage_documents(request):
 def delete_document(request, document_id):
     """Delete or deactivate document"""
     try:
-        document = AI_DOCUMENTS.objects.get(ID=document_id)
+        document = AIDocument.objects.get(ID=document_id)
         document.IS_ACTIVE = False
         document.save()
         
@@ -291,7 +291,7 @@ def delete_document(request, document_id):
             'SUCCESS': True,
             'MESSAGE': 'Document deactivated successfully'
         })
-    except AI_DOCUMENTS.DoesNotExist:
+    except AIDocument.DoesNotExist:
         return Response({
             'SUCCESS': False,
             'ERROR': 'Document not found'
@@ -301,11 +301,11 @@ def delete_document(request, document_id):
 def get_chat_history(request, session_id):
     """Get chat history for a session"""
     try:
-        messages = CHAT_MESSAGES.objects.filter(
-            SESSION_ID=session_id
+        messages = ChatMessage.objects.filter(
+            SESSION=session_id
         ).order_by('CREATED_AT')
         
-        serializer = CHAT_MESSAGE_SERIALIZER(messages, many=True)
+        serializer = ChatMessageSerializer(messages, many=True)
         
         return Response({
             'SUCCESS': True,
@@ -501,3 +501,75 @@ def chat(request):
             "error": "Internal error",
             "detail": str(e)
         }, status=500)
+
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+from AI.chat.models import (
+    ChatSession,
+    ChatMessage
+)
+
+from AI.chat.serializers import (
+    ChatRequestSerializer
+)
+
+from AI.services.retrieval import (
+    search_documents
+)
+
+from AI.services.context_builder import (
+    build_context
+)
+
+from AI.services.openrouter import (
+    ask_ai
+)
+
+
+class ChatAPIView(APIView):
+
+    def post(self, request):
+
+        serializer = ChatRequestSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        session_id = serializer.validated_data["session_id"]
+        message = serializer.validated_data["message"]
+
+        session, _ = ChatSession.objects.get_or_create(
+            session_id=session_id
+        )
+
+        ChatMessage.objects.create(
+            session=session,
+            role="user",
+            content=message
+        )
+
+        documents = search_documents(message)
+
+        context = build_context(documents)
+
+        answer = ask_ai(
+            question=message,
+            context=context
+        )
+
+        ChatMessage.objects.create(
+            session=session,
+            role="assistant",
+            content=answer,
+            model="qwen/qwen3-32b:free"
+        )
+
+        return Response({
+            "success": True,
+            "answer": answer
+        }, status=status.HTTP_200_OK)

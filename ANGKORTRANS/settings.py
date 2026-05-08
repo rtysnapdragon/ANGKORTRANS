@@ -61,7 +61,9 @@ if DEBUG:
 # OpenRouter Configuration
 OPENROUTER_API_KEY = env('OPENROUTER_API_KEY')
 OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
-OPENROUTER_MODEL='qwen/qwen-2.5-72b-instruct'  #Best for Khmer
+# OPENROUTER_MODEL='qwen/qwen-2.5-72b-instruct'  #Best for Khmer
+# OPENROUTER_MODEL='qwen/qwen-3-vl-8b'  #Best for Khmer
+OPENROUTER_MODEL=env('OPENROUTER_MODEL')
 
 ALLOWED_HOSTS = []
 # SIMPLE_JWT = { #This makes SimpleJWT use: (user.ID) instead of:(user.id)

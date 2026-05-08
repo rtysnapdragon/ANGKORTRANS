@@ -15,4 +15,6 @@ urlpatterns = [
     path('api/v2/chat/history', get_chat_history, name='chat_history'),
     path('api/v2/chat/documents', manage_documents, name='manage_documents'),
     path('api/v2/chat/documents/delete', delete_document, name='delete_document'), # by id
+
+    path( "api/v3/chat/send", ChatAPIView.as_view(), name="chat-send" ),
 ]

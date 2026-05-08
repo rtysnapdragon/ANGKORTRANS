@@ -15,7 +15,8 @@ daphne==4.2.1
 uvicorn==0.38.0
 channels
 channels-redis
-gunicorn
+# gunicorn
+gunicorn==23.0.0
 pycryptodome
 
 faiss-cpu
@@ -23,7 +24,7 @@ google-genai
 numpy
 google-generativeai
 
-uvicorn[standard]
+# uvicorn[standard]
 Pillow>=10.0.0
 
 opensearch-py
@@ -31,3 +32,6 @@ django-filter
 
 uuid6==2023.11.26
 requests==2.31.0
+
+openai==1.79.0
+sentence-transformers==4.1.0

@@ -32,6 +32,12 @@ class UserRole(models.Model):
     class Meta:
         db_table = 'USER_ROLES'
         unique_together = ('USER_ID', 'ROLE_ID')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['USER_ID', 'ROLE_ID'],
+                name='UQ_USER_ROLE'
+            )
+        ]
 
 
 class Permissions(models.Model):

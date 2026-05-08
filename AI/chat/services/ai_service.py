@@ -3,7 +3,7 @@ import time
 import json
 from django.conf import settings
 from django.db.models import Q
-from ..models import AI_DOCUMENTS, CHAT_MESSAGES
+from ..models import AIDocument, ChatMessage
 
 class AIChatService:
     def __init__(self):

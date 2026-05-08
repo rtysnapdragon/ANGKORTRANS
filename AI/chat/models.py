@@ -1,7 +1,7 @@
 from django.db import models
 import uuid
 
-class CHAT_USERS(models.Model):
+class ChatUser(models.Model):
     ID = models.AutoField(primary_key=True)
     USER_UUID = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     USERNAME = models.CharField(max_length=100, null=True, blank=True)
@@ -19,10 +19,10 @@ class CHAT_USERS(models.Model):
             models.Index(fields=['VISITOR_ID']),
         ]
 
-class CHAT_SESSIONS(models.Model):
+class ChatSession(models.Model):
     ID = models.AutoField(primary_key=True)
     SESSION_UUID = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    USER = models.ForeignKey(CHAT_USERS, on_delete=models.CASCADE, db_column='USER_ID')
+    USER = models.ForeignKey(ChatUser, on_delete=models.CASCADE, db_column='USER_ID')
     START_TIME = models.DateTimeField(auto_now_add=True)
     END_TIME = models.DateTimeField(null=True, blank=True)
     IS_ACTIVE = models.BooleanField(default=True)
@@ -36,7 +36,7 @@ class CHAT_SESSIONS(models.Model):
             models.Index(fields=['IS_ACTIVE']),
         ]
 
-class CHAT_MESSAGES(models.Model):
+class ChatMessage(models.Model):
     ROLE_CHOICES = [
         ('USER', 'User'),
         ('ASSISTANT', 'Assistant'),
@@ -45,8 +45,8 @@ class CHAT_MESSAGES(models.Model):
     
     ID = models.AutoField(primary_key=True)
     MESSAGE_UUID = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    SESSION = models.ForeignKey(CHAT_SESSIONS, on_delete=models.CASCADE,related_name='chat_messages_session_id', db_column='SESSION_ID')
-    USER = models.ForeignKey(CHAT_USERS, on_delete=models.CASCADE,related_name='chat_messages_user_id', db_column='USER_ID')
+    SESSION = models.ForeignKey(ChatSession, on_delete=models.CASCADE,related_name='chat_messages_session_id', db_column='SESSION_ID')
+    USER = models.ForeignKey(ChatUser, on_delete=models.CASCADE,related_name='chat_messages_user_id', db_column='USER_ID')
     ROLE = models.CharField(max_length=10, choices=ROLE_CHOICES)
     CONTENT = models.TextField()
     LANGUAGE_DETECTED = models.CharField(max_length=5, null=True, blank=True)
@@ -59,6 +59,7 @@ class CHAT_MESSAGES(models.Model):
     
     class Meta:
         db_table = 'CHAT_MESSAGES'
+        ordering = ["created_at"]
         indexes = [
             models.Index(fields=['SESSION']),
             models.Index(fields=['USER']),
@@ -66,7 +67,7 @@ class CHAT_MESSAGES(models.Model):
             models.Index(fields=['ROLE']),
         ]
 
-class AI_DOCUMENTS(models.Model):
+class AIDocument(models.Model):
     ID = models.AutoField(primary_key=True)
     DOCUMENT_UUID = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     TITLE = models.CharField(max_length=500)
@@ -90,17 +91,17 @@ class AI_DOCUMENTS(models.Model):
             models.Index(fields=['IS_ACTIVE']),
         ]
 
-class CHAT_FEEDBACK(models.Model):
+class ChatFeedback(models.Model):
     FEEDBACK_TYPES = [
         ('LIKE', 'Like'),
         ('DISLIKE', 'Dislike'),
         ('HELPFUL', 'Helpful'),
-        ('NOT_HELPFUL', 'Not Helpful'),
+        ('NOT_HELPFUL', 'NotHelpful'),
     ]
     
     ID = models.AutoField(primary_key=True)
-    MESSAGE = models.ForeignKey(CHAT_MESSAGES, on_delete=models.CASCADE, db_column='MESSAGE_ID')
-    USER = models.ForeignKey(CHAT_USERS, on_delete=models.CASCADE, db_column='USER_ID')
+    MESSAGE = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, db_column='MESSAGE_ID')
+    USER = models.ForeignKey(ChatUser, on_delete=models.CASCADE, db_column='USER_ID')
     FEEDBACK_TYPE = models.CharField(max_length=20, choices=FEEDBACK_TYPES)
     COMMENT = models.TextField(null=True, blank=True)
     CREATED_AT = models.DateTimeField(auto_now_add=True)

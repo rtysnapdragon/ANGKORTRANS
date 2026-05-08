@@ -209,6 +209,10 @@ git branch -m main
 git push --force origin main
 ```
 
+### OpenRouter
+```bash
+pip install openai
+```
 
 ##### CambodiaGeographicalList2025
 ```bash
@@ -564,3 +568,14 @@ INSERT INTO COUNTRY (
 
 # SQL 
 SELECT COUNT(*) FROM NOTIFICATIONS;
+
+## UnsignedIntegerField
+
+```python
+from django_mysql.models import UnsignedIntegerField
+
+class User(models.Model):
+    custom_id = UnsignedIntegerField()
+
+
+
