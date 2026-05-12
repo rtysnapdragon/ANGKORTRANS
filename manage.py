@@ -5,6 +5,14 @@ import os
 import sys
 from django.conf import settings
 
+
+# Force use of virtual environment
+if 'venv' not in sys.executable:
+    venv_python = os.path.join(os.path.dirname(__file__), 'venv', 'Scripts', 'python.exe')
+    if os.path.exists(venv_python):
+        print("Using venv Python...")
+        os.execl(venv_python, venv_python, *sys.argv)
+
 def show_startup_message():
     """Show nice startup banner only in the main (reloader) process"""
 
@@ -29,7 +37,7 @@ def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ANGKORTRANS.settings')
 
     import django
-    django.setup()  # ✅ IMPORTANT
+    # django.setup()  # ✅ IMPORTANT
 
     from django.conf import settings
 

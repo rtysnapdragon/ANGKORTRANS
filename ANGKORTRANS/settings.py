@@ -65,12 +65,16 @@ OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 # OPENROUTER_MODEL='qwen/qwen-3-vl-8b'  #Best for Khmer
 OPENROUTER_MODEL=env('OPENROUTER_MODEL')
 
-ALLOWED_HOSTS = []
 # SIMPLE_JWT = { #This makes SimpleJWT use: (user.ID) instead of:(user.id)
 #     'USER_ID_FIELD': 'ID',
 #     # 'USER_ID_FIELD': 'ID',
 #     'USER_ID_CLAIM': 'user_id',
 # }
+
+
+# Disable trailing slash for API endpoints
+APPEND_SLASH = False
+
 
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
@@ -78,6 +82,45 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
     "CHECK_USER_IS_ACTIVE": False,  # ⚠️ disable check
 }
+
+# ============================================
+# SECURITY SETTINGS
+# ============================================
+
+if DEBUG:
+    # LOCAL DEVELOPMENT
+    SECURE_SSL_REDIRECT = False
+
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+
+else:
+    # PRODUCTION
+    SECURE_SSL_REDIRECT = True
+
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+""" Security Side"""
+# SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')  # Must be strong & from env
+
+# Prevent clickjacking
+X_FRAME_OPTIONS = 'DENY'
+
+# Content Security Policy (recommended)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+
 
 AUTH_USER_MODEL = 'accounts.Users' #for django auth system, but we are using custom auth with JWT, so we will handle user authentication manually in views and serializers. This allows us to have more control over the user model and authentication process without being tied to Django's built-in auth system. We can still use Django's password hashing utilities for security, but we won't be using the full AbstractBaseUser or PermissionsMixin features.
 
@@ -92,7 +135,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    
+# Security & Rate Limiting
+'django_ratelimit',
+    'axes',                    # Brute force protection
     "channels",
 
    # your apps...
@@ -115,6 +161,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',# ← Must be near the top
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -122,10 +169,22 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-]
 
+    # Add this line:
+    'axes.middleware.AxesMiddleware',
+]
+# Add this to silence ratelimit cache warning in development
+SILENCED_SYSTEM_CHECKS = [
+    'django_ratelimit.E003',
+    'django_ratelimit.W001',
+]
 ROOT_URLCONF = 'ANGKORTRANS.urls'
+
+# IMPORTANT: Fix for axes.W003
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',   # ← Must be first
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -143,8 +202,46 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.JSONParser',
         'rest_framework.parsers.MultiPartParser',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '60/min',       # Anonymous users
+        'user': '300/min',      # Logged-in users
+        'login': '5/min',           # you can define custom scopes
+    },
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',  # Disable browsable API in prod
+    ],
 }
 
+# ======================
+# django-axes Settings (Brute Force Protection)
+# ======================
+# django-axes (brute force protection)
+AXES_FAILURE_LIMIT = 5
+AXES_LOCKOUT_TIME = 30  # minutes
+AXES_COOLOFF_TIME = 30
+# AXES_LOCKOUT_TEMPLATE = 'lockout.html'
+AXES_RESET_ON_SUCCESS = True
+AXES_VERBOSE = True
+AXES_LOCKOUT_TEMPLATE = None
+""" 
+# Example for login view
+from rest_framework.throttling import AnonRateThrottle
+
+class LoginThrottle(AnonRateThrottle):
+    rate = '5/min'
+
+# In your view
+class LoginView(...):
+    throttle_classes = [LoginThrottle]
+
+
+pip install django-ratelimit django-axes
+pip install django-ratelimit
+""" 
 # Central API Configuration
 API_VERSION = '1.0.0'          # ← Change this when you release a new version
 APP_TITLE = 'AngkorTrans API'
@@ -191,19 +288,41 @@ TEMPLATES = [
     },
 ]
 # CORS Settings - Allow Nuxt dev server
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",
-]
+# ============================================
+# CORS
+# ============================================
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
 
+CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOW_ALL_ORIGINS = DEBUG
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+# Important for API
+CORS_URLS_REGEX = r'^/api/.*$'
+
 WSGI_APPLICATION = 'ANGKORTRANS.wsgi.application'
 
 STATIC_URL = 'static/'
@@ -227,8 +346,9 @@ DATABASES = {
         'OPTIONS': {
             'charset': 'utf8mb4',
             "ssl": {"ssl-mode": "REQUIRED"},
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
-        'CONN_MAX_AGE': 300,             # Keep connection alive a bit longer
+        'CONN_MAX_AGE': 600,   # Connection pooling            # Keep connection alive a bit longer
         "ATOMIC_REQUESTS": False,   # ✅ explicitly safe
     },
     # # Optional: Add more static client databases (same server, different NAME)
@@ -342,8 +462,29 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ## If Redis is only used for cache or queue: Temporarily disable Redis (if you just want Django to run)
+# ======================
+# CACHE CONFIGURATION (Critical for django-ratelimit)
+# ======================
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        # 'BACKEND': 'django_redis.cache.RedisCache',
+        # 'LOCATION': 'redis://127.0.0.1:6379/1',
+        # 'OPTIONS': {
+        #     'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        # }
+        'LOCATION': 'unique-snowflake',   # Helps a bit, but still not shared
+    }
+}
+
+# For better rate limiting (Recommended)
+# Install django-redis or use database cache in production
 # CACHES = {
-#     "default": {
-#         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://127.0.0.1:6379/1',
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         }
 #     }
 # }
