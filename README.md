@@ -1,20 +1,28 @@
 ## Install Django
+
 #### 1. Create Django project
+
 ```
 django-admin startproject myproject
 cd myproject
 ```
+
 #### 2. Install Django & DRF
+
 pip install django djangorestframework
+
 #### 3. Create an app
+
 ```
 python manage.py startapp api
 ```
+
 ```bash
 
 ```
 
 ### Install RAG packages
+
 pip install -q -U google-genai faiss-cpu python-dotenv
 
     python -m venv venv && source venv/bin/activate
@@ -27,11 +35,17 @@ python manage.py migrate
 python manage.py runserver
 
 ## Setup venv
+
 python -m venv .venv
 python -m venv venv
+
+## By specific python version
+
 py -3.12 -m venv venv
-### ctivate your environment again
-myenv\Scripts\activate  ## is manaul
+
+## ctivate your environment again
+
+myenv\Scripts\activate ## is manaul
 .venv\Scripts\activate
 
 Never commit .env to Git
@@ -46,7 +60,8 @@ pip install pymysql
 pip install django-environ
 pip install mysql-connector-python
 pip install djangorestframework-simplejwt
-
+pip install django-axes
+pip install "django-axes>=6,<7"
 pip install drf-spectacular ##OpenAPI docs with Swagger UI.
 
 pip install channels channels-redis
@@ -54,21 +69,24 @@ pip install daphne
 run with ws:
 daphne ANGKORTRANS.asgi:application
 
- No module named 'Crypto' install below
- pip install pycryptodome
+No module named 'Crypto' install below
+pip install pycryptodome
+
 ### Check list package
+
 pip list
 pip show mysqlclient
 
 ## Stay in activated venv then install from requirements.txt to install all packages to project
-pip install -r requirements.txt
 
+pip install -r requirements.txt
 
 pip install gunicorn
 pip install redis celery
 
 # Run websocket Local
-``` bash
+
+```bash
 ## Run API server Local with gunicorn
 gunicorn ANGKORTRANS.asgi:application --port 8001 --bind [IP_ADDRESS]
 daphne ANGKORTRANS.asgi:application --port 8001 --bind [IP_ADDRESS]
@@ -79,19 +97,20 @@ bash
 # Run WebSocket Local with gunicorn
 gunicorn ANGKORTRANS.asgi:application
 # gunicorn ANGKORTRANS.asgi:application --port 52467 --bind [IP_ADDRESS]
-``` 
+```
 
-``` bash
+```bash
 # Run with address and port:
 daphne -b [IP_ADDRESS] -p 9000 ANGKORTRANS.asgi:application
 ```
 
 # Run api server
+
 python manage.py runserver [IP_ADDRESS]
 
-
 ## Install packages to venv or environment
-``` bash
+
+```bash
 Activate your virtual environment, then install Pillow:
 python -m pip install Pillow
 
@@ -101,7 +120,8 @@ pip install Pillow
 ```
 
 ## Render django
-```bash
+
+````bash
 #Build Command:
 pip install -r requirements.txt && python manage.py migrate
 
@@ -152,7 +172,7 @@ Architecture overview
         ------- Redis -------
 
 
-=== if need 3 services different 
+=== if need 3 services different
 ```bash
 pip install channels channels-redis daphne gunicorn uvicorn
 Service 1 — Gunicorn (HTTP API)
@@ -189,9 +209,10 @@ gunicorn ANGKORTRANS.asgi:application \
   --bind 0.0.0.0:8000 &
 
 daphne -b 0.0.0.0 -p $PORT ANGKORTRANS.asgi:application
-```
+````
 
 ## Issue with git push with security rejection
+
 ```
 error: failed to push some refs to 'https://github.com/rtysnapdragon/ANGKORTRANS.git'
 hint: Updates were rejected because the remote contains work that you do
@@ -200,6 +221,7 @@ hint: repository pushing to the same branch.
 ```
 
 1. Do this override all
+
 ```
 git checkout --orphan clean-main
 git add .
@@ -210,16 +232,19 @@ git push --force origin main
 ```
 
 ### OpenRouter
+
 ```bash
 pip install openai
 ```
 
 ##### CambodiaGeographicalList2025
+
 ```bash
 link: https://data.mef.gov.kh/api/v1/public-datasets/pd_68e370856a965e00074a5e7b/json?page=1&page_size=200
 ```
 
 ### requirements.txt
+
 ```bash
 Django>=4.2,<5.0
 mysqlclient>=2.2.1
@@ -231,8 +256,6 @@ djangorestframework-simplejwt>=5.3
 drf-spectacular>=0.27
 ```
 
-
-
 ```
 ✅ Option 2 (Drop tables manually)
 
@@ -240,7 +263,7 @@ If you cannot drop DB, run this:
 
 SET FOREIGN_KEY_CHECKS = 0;
 
-DROP TABLE IF EXISTS 
+DROP TABLE IF EXISTS
 AUTH_AUDIT_LOG,
 LOGIN_HISTORY,
 PASSWORD_RESET_TOKENS,
@@ -259,11 +282,10 @@ SET FOREIGN_KEY_CHECKS = 1;
 ✔ Disables FK constraints so drop won’t fail
 ```
 
-
-
 ### Disable FK checks and delete everything
 
 Run:
+
 ```bash
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -271,7 +293,6 @@ DELETE FROM USERS;
 
 SET FOREIGN_KEY_CHECKS = 1;
 ```
-
 
 ```SQL
 
@@ -424,19 +445,13 @@ VALUES (
 
 ```
 
-
 ### SQL
+
 SET FOREIGN_KEY_CHECKS = 0; # disable FK checks:
 SET FOREIGN_KEY_CHECKS = 1; # enable FK checks:
 
-
-
-
-
-
-
-
 ## Error conflict or rollback
+
 ```bash
 # ALTERNATIVE (if you CANNOT delete DB):
 python manage.py migrate accounts 0001 --fake
@@ -445,12 +460,13 @@ python manage.py migrate
 ```
 
 ## Error or rollback
+
 ```bash
 python manage.py migrate admin_address 0001 --fake
 python manage.py migrate
 ```
 
-``` 
+```
 ALTER TABLE DISTRICT
 DROP FOREIGN KEY DISTRICT_PROVINCE_ID_02a6617e_fk_PROVINCE_ID;
 
@@ -458,7 +474,7 @@ ALTER TABLE DISTRICT
 DROP COLUMN PROVINCE_ID;
 
 ALTER TABLE DISTRICT
-ADD COLUMN PROVINCE_ID INT AFTER ID; 
+ADD COLUMN PROVINCE_ID INT AFTER ID;
 
 SELECT * FROM DISTRICT
 WHERE PROVINCE_ID IS NULL;
@@ -484,7 +500,7 @@ ALTER TABLE VILLAGE
 DROP FOREIGN KEY VILLAGE_COMMUNE_ID_91b7bcad_fk_COMMUNE_ID;
 
 ALTER TABLE PROVINCE
-ADD COLUMN COUNTRY_ID INT AFTER ID; 
+ADD COLUMN COUNTRY_ID INT AFTER ID;
 
 ALTER TABLE PROVINCE
 ADD CONSTRAINT FK_PROVINCE_COUNTRY
@@ -499,9 +515,7 @@ FOREIGN KEY (COMMUNE_ID)
 REFERENCES COMMUNE(ID)
 ON DELETE RESTRICT
 ON UPDATE CASCADE;
-``` 
-
-
+```
 
 ```
 INSERT INTO COUNTRY (
@@ -565,9 +579,9 @@ INSERT INTO COUNTRY (
 
 ```
 
+# SQL
 
-# SQL 
-SELECT COUNT(*) FROM NOTIFICATIONS;
+SELECT COUNT(\*) FROM NOTIFICATIONS;
 
 ## UnsignedIntegerField
 
@@ -579,3 +593,4 @@ class User(models.Model):
 
 
 
+```

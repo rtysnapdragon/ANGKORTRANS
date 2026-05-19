@@ -59,7 +59,7 @@ class ChatMessage(models.Model):
     
     class Meta:
         db_table = 'CHAT_MESSAGES'
-        ordering = ["created_at"]
+        ordering = ["CREATED_AT"]
         indexes = [
             models.Index(fields=['SESSION']),
             models.Index(fields=['USER']),
