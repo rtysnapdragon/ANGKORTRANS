@@ -26,7 +26,7 @@ from django.db import transaction
 from django.utils import timezone
 import uuid
 from .models import ChatUser, ChatSession, ChatMessage, AIDocument, ChatFeedback
-from .serializers import ChatUserSerializer, ChatSessionSerializer, ChatMessageSerializer, AiDocumentSerializer
+from .serializers import ChatUserSerializer, ChatSessionSerializer, ChatMessageSerializer, AIDocumentSerializer
 
 from .services.ai_service import AIChatService
 

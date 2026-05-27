@@ -5,4 +5,5 @@ urlpatterns = [
     path('',include('accounts.auth.urls')),
     path('',include('accounts.users.urls')),
     path('', include('accounts.rbac.urls')),
+    path('', include('accounts.telegram.urls')),
 ]

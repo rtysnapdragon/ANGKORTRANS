@@ -66,6 +66,10 @@ pip install drf-spectacular ##OpenAPI docs with Swagger UI.
 
 pip install channels channels-redis
 pip install daphne
+
+pip install redis
+pip install django-redis
+
 run with ws:
 daphne ANGKORTRANS.asgi:application
 
@@ -254,6 +258,18 @@ PyMySQL>=1.1
 mysql-connector-python>=8.0
 djangorestframework-simplejwt>=5.3
 drf-spectacular>=0.27
+```
+
+##
+
+```bash
+| Feature                      | AUTO_INCREMENT ID | UUID          |
+| ---------------------------- | ----------------- | ------------- |
+| Performance                  | Excellent         | Slower        |
+| Storage                      | Small             | Larger        |
+| Predictability               | Predictable       | Hard to guess |
+| Security for public exposure | Weak              | Stronger      |
+| Best for APIs/public URLs    | No                | Yes           |
 ```
 
 ```

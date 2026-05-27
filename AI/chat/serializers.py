@@ -16,7 +16,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         model = ChatMessage
         fields = ['ID', 'MESSAGE_UUID', 'SESSION', 'ROLE', 'CONTENT', 'LANGUAGE_DETECTED', 'CREATED_AT']
 
-class AiDocumentSerializer(serializers.ModelSerializer):
+class AIDocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = AIDocument
         fields = ['ID', 'DOCUMENT_UUID', 'TITLE', 'CONTENT', 'CATEGORY', 'TAGS', 'LANGUAGE', 'CREATED_AT']

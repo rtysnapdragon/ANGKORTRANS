@@ -477,6 +477,38 @@ CACHES = {
     }
 }
 
+if DEBUG:
+    CACHES = {
+
+        'default': {
+
+            'BACKEND':
+                'django_redis.cache.RedisCache',
+
+            'LOCATION':
+                f"redis://:{os.getenv('REDIS_PASSWORD', 'redispwd')}@{os.getenv('REDIS_HOST', 'redis')}:{os.getenv('REDIS_PORT', '6379')}/0",
+
+            'OPTIONS': {
+
+                'CLIENT_CLASS':
+                    'django_redis.client.DefaultClient',
+            }
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND':
+                'django_redis.cache.RedisCache',
+            'LOCATION':
+                f"redis://:{os.getenv('REDIS_PASSWORD', 'redispwd')}@{os.getenv('REDIS_HOST', 'redis')}:{os.getenv('REDIS_PORT', '6379')}/0",
+            'OPTIONS': {
+                'CLIENT_CLASS':
+                    'django_redis.client.DefaultClient',
+            }
+        }
+    }
+    
 # For better rate limiting (Recommended)
 # Install django-redis or use database cache in production
 # CACHES = {
